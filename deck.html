@@ -1,0 +1,2082 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defensa GENDocs V3</title>
+<style>
+/* Crimson Pro local (carpeta fonts/): la presentación no depende de internet. */
+@font-face{font-family:'Crimson Pro';font-weight:400;font-style:normal;src:url('fonts/CrimsonPro-Regular.ttf') format('truetype')}
+@font-face{font-family:'Crimson Pro';font-weight:400;font-style:italic;src:url('fonts/CrimsonPro-Italic.ttf') format('truetype')}
+@font-face{font-family:'Crimson Pro';font-weight:500;font-style:normal;src:url('fonts/CrimsonPro-Medium.ttf') format('truetype')}
+@font-face{font-family:'Crimson Pro';font-weight:600;font-style:normal;src:url('fonts/CrimsonPro-SemiBold.ttf') format('truetype')}
+@font-face{font-family:'Crimson Pro';font-weight:700;font-style:normal;src:url('fonts/CrimsonPro-Bold.ttf') format('truetype')}
+/* Lienzo 1280x720 (13.33 x 7.5 in): 1 px = 0.75 pt.
+   Version 3: todo lo que se lee va a 24 px (18 pt) o mas. Quedan por debajo solo
+   la linea de fuente (.src, 16 px), los numeros de ejes (.ax, 20 px) y el marco
+   (encabezado y pie). Granate = V3 y enfasis; gris = V2. */
+:root{
+  --g:#901B23; --g-dark:#6E1219; --g-mid:#C9767C; --g-soft:#F6E9EA; --g-line:#E9CDD0;
+  --tile:#F7F3F0; --line:#E6DDD8;
+  --v2:#8C8C8C; --v2-soft:#EDEDED;
+  --ink:#1E1E1E; --mut:#5E5E5E;
+  --z:1; --s:1;
+}
+*{box-sizing:border-box}
+html{background:#3a3a3a}
+body{margin:0;background:#3a3a3a;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  font-family:'Crimson Pro',Georgia,'Times New Roman',serif;color:var(--ink);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.slide img{max-width:none}
+.deck{padding:56px 0 24px}
+.hint{position:fixed;top:0;left:0;right:0;z-index:10;background:#1f1f1f;color:#ddd;font:14px/1.4 system-ui,sans-serif;padding:calc(8px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px));text-align:center}
+.hint b{color:#fff}
+.hint button,.exit{font:600 14px system-ui,sans-serif;background:#901B23;color:#fff;border:0;border-radius:6px;padding:6px 14px;margin-right:10px;cursor:pointer}
+.hint button:focus-visible,.exit:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.hint a{color:#fff;margin-left:12px;text-decoration:underline}
+.exit{display:none;position:fixed;z-index:20;top:calc(10px + env(safe-area-inset-top, 0px));right:calc(10px + env(safe-area-inset-right, 0px));background:rgba(0,0,0,.55);margin:0}
+body.present .exit{display:block}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;background:#fff;
+  margin:0 auto 24px;box-shadow:0 6px 24px rgba(0,0,0,.35);zoom:var(--z)}
+body.present{background:#000;overflow:hidden;padding:0}
+body.present .hint{display:none}
+body.present .deck{padding:0}
+body.present .slide{display:none;margin:0;box-shadow:none;zoom:1}
+body.present .slide.active{display:block;position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(var(--s))}
+@page{size:1280px 720px;margin:0}
+@media print{
+  html,body{background:#fff}
+  .hint,.exit{display:none !important}
+  body{padding:0}
+  .deck{padding:0}
+  .slide{margin:0;box-shadow:none;zoom:1 !important;display:block !important;position:relative !important;
+    transform:none !important;break-after:page;page-break-after:always}
+}
+
+/* ---------- marco ---------- */
+.hd{position:absolute;left:0;top:0;width:100%;height:58px;background:var(--g);
+  display:flex;align-items:center;justify-content:center}
+.hd span{color:#fff;font-size:18px;letter-spacing:.24em;font-weight:600}
+/* El sello de la UTA trae fondo blanco cuadrado: se recorta al circulo del anillo dorado. */
+.hd .lu{position:absolute;left:20px;top:5px;width:78px;height:78px;clip-path:circle(48.3% at 49.8% 50.2%)}
+.hd .lf{position:absolute;right:20px;top:5px;width:76px;height:76px;background:#fff;border-radius:50%;padding:2px}
+.ft{position:absolute;left:0;bottom:0;width:100%;height:30px;background:var(--g);color:#fff;
+  display:flex;align-items:center;padding:0 22px;font-size:14px}
+.prog{display:flex;gap:22px;letter-spacing:.05em}
+.prog span{opacity:.5}
+.prog span.on{opacity:1;font-weight:700;border-bottom:2px solid #fff;line-height:1.15}
+.num{margin-left:auto;font-weight:600;font-size:15px}
+.main{position:absolute;top:84px;left:72px;right:72px;bottom:44px;display:flex;flex-direction:column}
+.slide:has(.src) .main{bottom:70px}
+.kicker{font-size:24px;line-height:1.1;color:var(--g);font-weight:600}
+.t{font-size:38px;line-height:1.12;margin:3px 0 0;font-weight:700;letter-spacing:-.005em}
+.rule{width:64px;height:3px;background:var(--g);margin-top:10px;flex:none}
+.body{flex:1;min-height:0;margin-top:18px;position:relative}
+.src{position:absolute;left:72px;right:72px;bottom:38px;font-size:16px;line-height:1.2;color:var(--mut);font-style:italic}
+
+/* ---------- piezas ---------- */
+.row{display:flex;gap:22px}
+.col{display:flex;flex-direction:column;gap:16px}
+.f1{flex:1;min-width:0}
+.card{background:var(--tile);border-radius:10px;padding:16px 20px}
+.card.out{background:#fff;border:1.5px solid var(--line)}
+.card.red{background:var(--g);color:#fff}
+.card.soft{background:var(--g-soft)}
+.card.topline{border-top:4px solid var(--g)}
+.lbl{font-size:24px;line-height:1.15;color:var(--mut);font-weight:700}
+.red .lbl{color:rgba(255,255,255,.86)}
+.big{font-size:54px;font-weight:700;color:var(--g);line-height:1}
+.red .big,.red .mid{color:#fff}
+.mid{font-size:34px;font-weight:700;color:var(--g);line-height:1.05}
+.txt{font-size:26px;line-height:1.22}
+.sm{font-size:24px;line-height:1.2}
+.nt{font-size:24px;line-height:1.2;color:var(--mut)}
+.mut{color:var(--mut)}
+.red .mut,.red .nt{color:rgba(255,255,255,.88)}
+.g{color:var(--g)} .v2c{color:var(--v2)}
+b,strong{font-weight:700}
+.chip{display:inline-block;padding:2px 14px;border-radius:999px;background:var(--g-soft);color:var(--g);font-size:24px;line-height:1.2;font-weight:600;margin:0 8px 8px 0;white-space:nowrap}
+.chip.gray{background:var(--v2-soft);color:#444}
+.chip.solid{background:var(--g);color:#fff}
+.ic{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.lg{width:36px;height:36px}
+.icl{display:flex;gap:12px;align-items:center}
+.arrow{font-size:40px;color:var(--g);display:flex;align-items:center;justify-content:center;flex:none}
+.sw{display:inline-block;width:18px;height:18px;border-radius:3px;vertical-align:-2px;margin-right:7px}
+.legend{font-size:24px;line-height:1.2;color:var(--mut)}
+.legend span{margin-right:20px;white-space:nowrap}
+svg text{font-family:'Crimson Pro',Georgia,serif}
+.mono{font-family:Menlo,Consolas,monospace;font-size:24px}
+.letter{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:6px;font-weight:700;font-size:24px;flex:none}
+.L-A{background:var(--g);color:#fff}
+.L-B{background:var(--g-mid);color:#fff}
+.L-C{background:#fff;color:var(--g);border:2px solid var(--g)}
+.shot{overflow:hidden;border-radius:10px;border:1.5px solid var(--line);background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.shot img,.shot video{display:block}
+
+/* ---------- apertura del objetivo 2: el sistema en pantalla ---------- */
+.hero{background:linear-gradient(135deg,var(--g-dark),var(--g) 70%);color:#fff}
+.hero .hk{position:absolute;left:140px;top:20px;font-size:24px;font-weight:600;opacity:.88}
+.hero .ht{position:absolute;left:140px;top:48px;font-size:38px;font-weight:700;line-height:1.1;margin:0}
+.hero .hshot{position:absolute;left:140px;top:104px;width:1000px;border-radius:10px;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,.45)}
+.hero .hshot img{display:block;width:100%}
+.hero .hc{position:absolute;left:140px;right:140px;bottom:20px;font-size:24px;line-height:1.2;opacity:.9}
+
+/* ---------- animaciones de entrada (solo al presentar) ---------- */
+@keyframes entra{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes crece{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+body.present .slide.active .an{animation:entra .55s cubic-bezier(.2,.7,.2,1) both}
+body.present .slide.active .an.z{animation-name:crece;animation-duration:.7s}
+body.present .slide.active .a2{animation-delay:.45s}
+body.present .slide.active .a3{animation-delay:.9s}
+body.present .slide.active .a4{animation-delay:1.35s}
+body.present .slide.active .a5{animation-delay:1.8s}
+@media (prefers-reduced-motion:reduce){body.present .slide.active .an{animation:none}}
+@media print{.an{animation:none !important}}
+
+/* ---------- ampliación de capturas y clips ---------- */
+.zoom{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.9);align-items:center;justify-content:center;cursor:zoom-out}
+.zoom.on{display:flex}
+.zoom img,.zoom video{width:auto;height:auto;max-width:94vw;max-height:92vh;min-height:72vh;object-fit:contain;border-radius:8px}
+@media print{.zoom{display:none !important}}
+
+/* ---------- portada ---------- */
+.cover .ribbon{position:absolute;left:70px;top:120px;width:84px;height:600px;
+  background:linear-gradient(90deg,#6E1219,#A3232C);clip-path:polygon(0 0,100% 0,100% 100%,50% 95%,0 100%)}
+.cover .ribbon-line{position:absolute;left:58px;top:150px;width:2px;height:520px;background:#7d1820}
+.cover .cv-uta{position:absolute;left:40px;top:26px;width:150px;clip-path:circle(48.3% at 49.8% 50.2%)}
+.cover .cv-fisei{position:absolute;right:46px;top:30px;width:136px}
+.cv-body{position:absolute;left:212px;right:196px;top:50px;text-align:center}
+.cv-u{font-size:34px;font-weight:700;letter-spacing:.02em}
+.cv-f{font-size:24px;font-weight:600;margin-top:6px;line-height:1.15}
+.cv-c{font-size:24px;color:var(--g);font-weight:600;margin-top:8px;letter-spacing:.06em}
+.cv-tema{font-size:24px;letter-spacing:.3em;color:var(--mut);margin-top:22px}
+.cover h1{font-size:29px;line-height:1.24;margin:8px 0 0;font-weight:700}
+.cv-rule{display:flex;align-items:center;justify-content:center;margin:16px auto 0;width:420px}
+.cv-rule i{width:10px;height:10px;border-radius:50%;background:var(--g)}
+.cv-rule b{flex:1;height:3px;background:var(--g)}
+.cv-grado{font-size:24px;color:var(--mut);margin:16px auto 0;line-height:1.25}
+.cv-who{font-size:24px;margin-top:18px;line-height:1.45}
+.cv-place{font-size:24px;color:var(--mut);margin-top:12px}
+
+/* ---------- divisor ---------- */
+.div{background:var(--g);color:#fff}
+.div .bar{position:absolute;left:100px;top:84px;width:60px;height:4px;background:rgba(255,255,255,.6)}
+.div .eyebrow{position:absolute;left:100px;top:226px;font-size:24px;letter-spacing:.24em;font-weight:600;opacity:.9}
+.div h2{position:absolute;left:100px;top:268px;font-size:58px;line-height:1.08;margin:0;max-width:960px;font-weight:700}
+.div p{position:absolute;left:100px;top:450px;font-size:26px;line-height:1.35;max-width:820px;margin:0;opacity:.92}
+.div .bignum{position:absolute;right:90px;bottom:40px;font-size:200px;font-weight:700;opacity:.16;line-height:1}
+
+/* ---------- linea de tiempo (2) ---------- */
+.tlc{display:flex;flex-direction:column}
+.yr{font-size:34px;font-weight:700;line-height:1}
+.tick{height:22px;position:relative;margin:8px 0 10px;flex:none}
+.tick::before{content:'';position:absolute;left:0;right:-18px;top:9px;height:3px;background:var(--line)}
+.tick.last::before{right:0}
+.tick i{position:absolute;left:0;top:3px;width:15px;height:15px;border-radius:50%}
+
+/* ---------- arbol de problemas (3) ---------- */
+.pb{flex:1;min-width:0;min-height:78px;padding:9px 14px;border-radius:10px;font-size:24px;line-height:1.2;display:flex;align-items:center}
+.pb.ef{background:#fff;border:1.5px solid var(--g-line)}
+.pb.ca{background:var(--tile)}
+.ups{display:flex;gap:14px;padding-left:118px;height:28px}
+.ups div{flex:1;text-align:center;color:var(--g);font-size:28px;line-height:28px;font-weight:700}
+
+/* ---------- tabla de metricas (10) ---------- */
+.mx{width:100%;border-collapse:collapse}
+.mx th{font-size:24px;color:#fff;background:var(--g);padding:6px 12px;font-weight:700;text-align:left}
+.mx td{padding:4px 12px;border-bottom:1px solid var(--line);font-size:24px;line-height:1.2}
+.mx tr:nth-child(even) td{background:#FBF8F6}
+.pill{display:inline-block;padding:0 12px;border-radius:999px;font-size:24px;line-height:1.25;font-weight:600;margin-right:8px;white-space:nowrap;border:1.5px solid transparent}
+.p-mod{background:var(--g);color:#fff}
+.p-reu{background:var(--g-soft);color:var(--g)}
+.p-ana{background:#E7E7E7;color:#333}
+.p-mof{background:#fff;border-color:var(--g);color:var(--g)}
+.p-tes{background:#fff;border-color:#8C8C8C;color:#444}
+.p-glo{background:#5E5E5E;color:#fff}
+
+/* ---------- linea base (12, 13) ---------- */
+.track{position:relative;height:16px;background:#EFE9E5;border-radius:8px;margin-top:8px}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:var(--v2)}
+.track u{position:absolute;top:-6px;bottom:-6px;width:3px;background:var(--g)}
+.red .track{background:rgba(255,255,255,.28)}
+.red .track i{background:#fff}
+.red .track u{background:#1E1E1E}
+.sc{display:flex;align-items:center;gap:12px;font-size:24px;line-height:1.2}
+
+/* ---------- arquitectura (18) ---------- */
+.layer{display:flex;gap:12px;align-items:stretch;background:var(--tile);border-radius:10px;padding:10px 12px 10px 0}
+.ln{width:164px;flex:none;display:flex;align-items:center;justify-content:center;text-align:center;font-size:24px;font-weight:700;color:var(--g);border-right:3px solid var(--g);padding:0 10px;line-height:1.15}
+.lb{display:flex;gap:10px;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:6px 12px;font-size:24px;line-height:1.2}
+.lb.blk{justify-content:center;border-color:var(--g)}
+.lb.blk b{color:#fff;background:var(--g);border-radius:4px;padding:0 8px}
+
+/* ---------- arbol de carpetas (21) ---------- */
+.tree,.tree ul{list-style:none;margin:0;padding:0}
+.tree ul{margin-left:20px;padding-left:20px;border-left:2px solid var(--g-line)}
+.tree li{position:relative;padding:4px 0;font-size:24px;line-height:1.2;color:var(--g);white-space:nowrap}
+.tree ul>li::before{content:'';position:absolute;left:-20px;top:23px;width:14px;border-top:2px solid var(--g-line)}
+.node{display:inline-flex;align-items:center;gap:7px;font-size:24px;color:var(--ink);background:var(--tile);padding:2px 10px;border-radius:6px}
+.node .ic{width:22px;height:22px}
+.node.root{background:var(--g);color:#fff;font-weight:700}
+.node.hl{background:var(--g-soft);color:var(--g);font-weight:700}
+.node.f{background:#fff;border:1.5px solid var(--line)}
+
+/* ---------- acceso (22) ---------- */
+.guard{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;justify-content:space-between;font-size:24px;line-height:1.15}
+.guard .deny{align-self:flex-start;font-size:24px;font-weight:700;color:#fff;background:#8C8C8C;border-radius:4px;padding:0 8px}
+.guard.ok{background:var(--g-soft);border-color:var(--g);color:var(--g);font-weight:700;justify-content:center}
+
+/* ---------- perfil (26) ---------- */
+.pr{display:flex;gap:20px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}
+.pl{width:300px;flex:none;font-size:24px;font-weight:700;line-height:1.15}
+.pv{flex:1;min-width:0}
+.bar2{position:relative;height:36px;background:#F1ECE9;border-radius:4px}
+.bar2 i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.bar2 span{position:absolute;left:calc(34.78% + 12px);top:3px;font-size:24px;font-weight:700;color:var(--ink);white-space:nowrap}
+.bar2 span.in{left:12px;color:#fff}
+
+/* ---------- tablas del anexo ---------- */
+.tb{width:100%;border-collapse:collapse;font-size:24px;line-height:1.18}
+.tb th{background:var(--g);color:#fff;font-size:24px;font-weight:700;padding:6px 10px;text-align:left}
+.tb td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tb tr:nth-child(even) td{background:#FBF8F6}
+.tb td.c,.tb th.c{text-align:center}
+.tb tr td.ok{background:var(--g-soft);font-weight:600}
+.tb th .bi{width:24px;height:24px}
+.rf div{font-size:24px;line-height:1.18;padding:3px 0 3px 82px;text-indent:-82px}
+.rf div b{color:var(--g);display:inline-block;width:82px;text-indent:0}
+.rf .grp{font-weight:700;color:#fff;background:var(--g);padding:4px 12px;border-radius:4px;margin:0 0 6px;text-indent:0}
+/* tabla compacta de comparaciones: filas de una linea, grupo por sub-caracteristica */
+.tb.cp td{padding:3px 10px;white-space:nowrap}
+.tb.cp th{padding:5px 10px}
+.tb .grp td,.tb tr.grp:nth-child(even) td{background:var(--g-soft);color:var(--g);font-weight:700;padding:1px 10px}
+.fv{display:inline-block;padding:0 12px;border-radius:999px;font-size:24px;line-height:1.2;font-weight:700;white-space:nowrap}
+.fv.v3{background:var(--g);color:#fff}
+.fv.v2{background:#757575;color:#fff}
+.fv.dv{background:#E0B4B7;color:var(--ink)}
+.fv.em{background:#D9D9D9;color:var(--ink)}
+.fv.sv{background:#fff;color:#444;box-shadow:inset 0 0 0 1.5px #999}
+/* logos de marca (Simple Icons, un trazo) */
+.bi{width:28px;height:28px;flex:none;fill:var(--ink)}
+.bi.in{vertical-align:-5px;margin-right:8px}
+.step{display:flex;gap:12px;align-items:flex-start;font-size:24px;line-height:1.2}
+.step b{flex:none;width:34px;height:34px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px}
+</style>
+</head>
+<body>
+<div class="hint"><button type="button" id="btn-present">Presentar</button><b>P</b> presentar · <b>← →</b> o un toque para avanzar (toque a la izquierda para retroceder) · <b>Esc</b> o <b>×</b> para salir · clic en una captura para ampliarla<a id="otro-tema" href="deck-azul.html">Ver en paleta azul</a></div>
+<div class="zoom" id="zoom" aria-hidden="true"></div>
+<button type="button" class="exit" id="btn-exit" aria-label="Salir de la presentación">×</button>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#901B23"/></marker>
+  <marker id="ahg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#555"/></marker>
+</svg>
+<!-- Logos de marca: Simple Icons 16.18.0 (CC0), tomados de una copia local. Un solo trazo por logo, viewBox 24. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="b-postgresql" viewBox="0 0 24 24"><path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126zm6.0072 5.0871c-.1711-.0428-.3271-.1132-.4322-.1772.0889-.0394.2374-.0902.4833-.1409 1.2833-.2641 1.4815-.4506 1.9143-1.0002.0992-.126.2116-.2687.3673-.4426a.3549.3549 0 0 0 .0737-.1298c.1708-.1513.2724-.1099.4369-.0417.156.0646.3078.26.3695.4752.0291.1016.0619.2945-.0452.4444-.9043 1.2658-2.2216 1.2494-3.1676 1.0128zm2.094-3.988-.0525.141c-.133.3566-.2567.6881-.3334 1.003-.6674-.0021-1.3168-.2872-1.8105-.8024-.6279-.6551-.9131-1.5664-.7825-2.5004.1828-1.3079.1153-2.4468.079-3.0586-.005-.0857-.0095-.1607-.0122-.2199.2957-.2621 1.6659-.9962 2.6429-.7724.4459.1022.7176.4057.8305.928.5846 2.7038.0774 3.8307-.3302 4.7363-.084.1866-.1633.3629-.2311.5454zm7.3637 4.5725c-.0169.1768-.0358.376-.0618.5959l-.146.4383a.3547.3547 0 0 0-.0182.1077c-.0059.4747-.054.6489-.115.8693-.0634.2292-.1353.4891-.1794 1.0575-.11 1.4143-.8782 2.2267-2.4172 2.5565-1.5155.3251-1.7843-.4968-2.0212-1.2217a6.5824 6.5824 0 0 0-.0769-.2266c-.2154-.5858-.1911-1.4119-.1574-2.5551.0165-.5612-.0249-1.9013-.3302-2.6462.0044-.2932.0106-.5909.019-.8918a.3529.3529 0 0 0-.0153-.1126 1.4927 1.4927 0 0 0-.0439-.208c-.1226-.4283-.4213-.7866-.7797-.9351-.1424-.059-.4038-.1672-.7178-.0869.067-.276.1831-.5875.309-.9249l.0529-.142c.0595-.16.134-.3257.213-.5012.4265-.9476 1.0106-2.2453.3766-5.1772-.2374-1.0981-1.0304-1.6343-2.2324-1.5098-.7207.0746-1.3799.3654-1.7088.5321a5.6716 5.6716 0 0 0-.1958.1041c.0918-1.1064.4386-3.1741 1.7357-4.4823a4.0306 4.0306 0 0 1 .3033-.276.3532.3532 0 0 0 .1447-.0644c.7524-.5706 1.6945-.8506 2.802-.8325.4091.0067.8017.0339 1.1742.081 1.939.3544 3.2439 1.4468 4.0359 2.3827.8143.9623 1.2552 1.9315 1.4312 2.4543-1.3232-.1346-2.2234.1268-2.6797.779-.9926 1.4189.543 4.1729 1.2811 5.4964.1353.2426.2522.4522.2889.5413.2403.5825.5515.9713.7787 1.2552.0696.087.1372.1714.1885.245-.4008.1155-1.1208.3825-1.0552 1.717-.0123.1563-.0423.4469-.0834.8148-.0461.2077-.0702.4603-.0994.7662zm.8905-1.6211c-.0405-.8316.2691-.9185.5967-1.0105a2.8566 2.8566 0 0 0 .135-.0406 1.202 1.202 0 0 0 .1342.103c.5703.3765 1.5823.4213 3.0068.1344-.2016.1769-.5189.3994-.9533.6011-.4098.1903-1.0957.333-1.7473.3636-.7197.0336-1.0859-.0807-1.1721-.151zm.5695-9.2712c-.0059.3508-.0542.6692-.1054 1.0017-.055.3576-.112.7274-.1264 1.1762-.0142.4368.0404.8909.0932 1.3301.1066.887.216 1.8003-.2075 2.7014a3.5272 3.5272 0 0 1-.1876-.3856c-.0527-.1276-.1669-.3326-.3251-.6162-.6156-1.1041-2.0574-3.6896-1.3193-4.7446.3795-.5427 1.3408-.5661 2.1781-.463zm.2284 7.0137a12.3762 12.3762 0 0 0-.0853-.1074l-.0355-.0444c.7262-1.1995.5842-2.3862.4578-3.4385-.0519-.4318-.1009-.8396-.0885-1.2226.0129-.4061.0666-.7543.1185-1.0911.0639-.415.1288-.8443.1109-1.3505.0134-.0531.0188-.1158.0118-.1902-.0457-.4855-.5999-1.938-1.7294-3.253-.6076-.7073-1.4896-1.4972-2.6889-2.0395.5251-.1066 1.2328-.2035 2.0244-.1859 2.0515.0456 3.6746.8135 4.8242 2.2824a.908.908 0 0 1 .0667.1002c.7231 1.3556-.2762 6.2751-2.9867 10.5405zm-8.8166-6.1162c-.025.1794-.3089.4225-.6211.4225a.5821.5821 0 0 1-.0809-.0056c-.1873-.026-.3765-.144-.5059-.3156-.0458-.0605-.1203-.178-.1055-.2844.0055-.0401.0261-.0985.0925-.1488.1182-.0894.3518-.1226.6096-.0867.3163.0441.6426.1938.6113.4186zm7.9305-.4114c.0111.0792-.049.201-.1531.3102-.0683.0717-.212.1961-.4079.2232a.5456.5456 0 0 1-.075.0052c-.2935 0-.5414-.2344-.5607-.3717-.024-.1765.2641-.3106.5611-.352.297-.0414.6111.0088.6356.1851z"/></symbol>
+  <symbol id="b-redis" viewBox="0 0 24 24"><path d="M22.71 13.145c-1.66 2.092-3.452 4.483-7.038 4.483-3.203 0-4.397-2.825-4.48-5.12.701 1.484 2.073 2.685 4.214 2.63 4.117-.133 6.94-3.852 6.94-7.239 0-4.05-3.022-6.972-8.268-6.972-3.752 0-8.4 1.428-11.455 3.685C2.59 6.937 3.885 9.958 4.35 9.626c2.648-1.904 4.748-3.13 6.784-3.744C8.12 9.244.886 17.05 0 18.425c.1 1.261 1.66 4.648 2.424 4.648.232 0 .431-.133.664-.365a100.49 100.49 0 0 0 5.54-6.765c.222 3.104 1.748 6.898 6.014 6.898 3.819 0 7.604-2.756 9.33-8.965.2-.764-.73-1.361-1.261-.73zm-4.349-5.013c0 1.959-1.926 2.922-3.685 2.922-.941 0-1.664-.247-2.235-.568 1.051-1.592 2.092-3.225 3.21-4.973 1.972.334 2.71 1.43 2.71 2.619z"/></symbol>
+  <symbol id="b-nestjs" viewBox="0 0 24 24"><path d="M14.131.047c-.173 0-.334.037-.483.087.316.21.49.49.576.806.007.043.019.074.025.117a.681.681 0 0 1 .013.112c.024.545-.143.614-.26.936-.18.415-.13.861.086 1.22a.74.74 0 0 0 .074.137c-.235-1.568 1.073-1.803 1.314-2.293.019-.428-.334-.713-.613-.911a1.37 1.37 0 0 0-.732-.21zM16.102.4c-.024.143-.006.106-.012.18-.006.05-.006.112-.012.161-.013.05-.025.1-.044.149-.012.05-.03.1-.05.149l-.067.142c-.02.025-.031.05-.05.075l-.037.055a2.152 2.152 0 0 1-.093.124c-.037.038-.068.081-.112.112v.006c-.037.031-.074.068-.118.1-.13.099-.278.173-.415.266-.043.03-.087.056-.124.093a.906.906 0 0 0-.118.099c-.043.037-.074.074-.111.118-.031.037-.068.08-.093.124a1.582 1.582 0 0 0-.087.13c-.025.05-.043.093-.068.142-.019.05-.037.093-.05.143a2.007 2.007 0 0 0-.043.155c-.006.025-.006.056-.012.08-.007.025-.007.05-.013.075 0 .05-.006.105-.006.155 0 .037 0 .074.006.111 0 .05.006.1.019.155.006.05.018.1.03.15.02.049.032.098.05.148.013.03.031.062.044.087l-1.426-.552c-.241-.068-.477-.13-.719-.186l-.39-.093c-.372-.074-.75-.13-1.128-.167-.013 0-.019-.006-.031-.006A11.082 11.082 0 0 0 8.9 2.855c-.378.025-.756.074-1.134.136a12.45 12.45 0 0 0-.837.174l-.279.074c-.092.037-.18.08-.266.118l-.205.093c-.012.006-.024.006-.03.012-.063.031-.118.056-.174.087a2.738 2.738 0 0 0-.236.118c-.043.018-.086.043-.124.062a.559.559 0 0 1-.055.03c-.056.032-.112.063-.162.094a1.56 1.56 0 0 0-.148.093c-.044.03-.087.055-.124.086-.006.007-.013.007-.019.013-.037.025-.08.056-.118.087l-.012.012-.093.074c-.012.007-.025.019-.037.025-.031.025-.062.056-.093.08-.006.013-.019.02-.025.025-.037.038-.074.069-.111.106-.007 0-.007.006-.013.012a1.742 1.742 0 0 0-.111.106c-.007.006-.007.012-.013.012a1.454 1.454 0 0 0-.093.1c-.012.012-.03.024-.043.036a1.374 1.374 0 0 1-.106.112c-.006.012-.018.019-.024.03-.05.05-.093.1-.143.15l-.018.018c-.1.106-.205.211-.317.304-.111.1-.229.192-.347.273a3.777 3.777 0 0 1-.762.421c-.13.056-.267.106-.403.149-.26.056-.527.161-.756.18-.05 0-.105.012-.155.018l-.155.037-.149.056c-.05.019-.099.044-.148.068-.044.031-.093.056-.137.087a1.011 1.011 0 0 0-.124.106c-.043.03-.087.074-.124.111-.037.043-.074.08-.105.124-.031.05-.068.093-.093.143a1.092 1.092 0 0 0-.087.142c-.025.056-.05.106-.068.161-.019.05-.037.106-.056.161-.012.05-.025.1-.03.15 0 .005-.007.012-.007.018-.012.056-.012.13-.019.167C.006 7.95 0 7.986 0 8.03a.657.657 0 0 0 .074.31v.006c.019.037.044.075.069.112.024.037.05.074.08.111.031.031.068.069.106.1a.906.906 0 0 0 .117.099c.149.13.186.173.378.272.031.019.062.031.1.05.006 0 .012.006.018.006 0 .013 0 .019.006.031a1.272 1.272 0 0 0 .08.298c.02.037.032.074.05.111.007.013.013.025.02.031.024.05.049.093.073.137l.093.13c.031.037.069.08.106.118.037.037.074.068.118.105 0 0 .006.006.012.006.037.031.074.062.112.087a.986.986 0 0 0 .136.08c.043.025.093.05.142.069a.73.73 0 0 0 .124.043c.007.006.013.006.025.012.025.007.056.013.08.019-.018.335-.024.65.026.762.055.124.328-.254.6-.688-.036.428-.061.93 0 1.079.069.155.44-.329.763-.862 4.395-1.016 8.405 2.02 8.826 6.31-.08-.67-.905-1.041-1.283-.948-.186.458-.502 1.047-1.01 1.413.043-.41.025-.83-.062-1.24a4.009 4.009 0 0 1-.769 1.562c-.588.043-1.177-.242-1.487-.67-.025-.018-.031-.055-.05-.08-.018-.043-.037-.087-.05-.13a.515.515 0 0 1-.037-.13c-.006-.044-.006-.087-.006-.137v-.093a.992.992 0 0 1 .031-.13c.013-.043.025-.086.044-.13.024-.043.043-.087.074-.13.105-.298.105-.54-.087-.682a.706.706 0 0 0-.118-.062c-.024-.006-.055-.018-.08-.025l-.05-.018a.847.847 0 0 0-.13-.031.472.472 0 0 0-.13-.019 1.01 1.01 0 0 0-.136-.012c-.031 0-.062.006-.093.006a.484.484 0 0 0-.137.019c-.043.006-.086.012-.13.024a1.068 1.068 0 0 0-.13.044c-.043.018-.08.037-.124.056-.037.018-.074.043-.118.062-1.444.942-.582 3.148.403 3.787-.372.068-.75.148-.855.229l-.013.012c.267.161.546.298.837.416.397.13.818.247 1.004.297v.006a5.996 5.996 0 0 0 1.562.112c2.746-.192 4.996-2.281 5.405-5.033l.037.161c.019.112.043.23.056.347v.006c.012.056.018.112.025.162v.024c.006.056.012.112.012.162.006.068.012.136.012.204v.1c0 .03.007.067.007.098 0 .038-.007.075-.007.112v.087c0 .043-.006.08-.006.124 0 .025 0 .05-.006.08 0 .044-.006.087-.006.137-.006.018-.006.037-.006.055l-.02.143c0 .019 0 .037-.005.056-.007.062-.019.118-.025.18v.012l-.037.174v.018l-.037.167c0 .007-.007.02-.007.025a1.663 1.663 0 0 1-.043.168v.018c-.019.062-.037.118-.05.174-.006.006-.006.012-.006.012l-.056.186c-.024.062-.043.118-.068.18-.025.062-.043.124-.068.18-.025.062-.05.117-.074.18h-.007c-.024.055-.05.117-.08.173a.302.302 0 0 1-.019.043c-.006.006-.006.013-.012.019a5.867 5.867 0 0 1-1.742 2.082c-.05.031-.099.069-.149.106-.012.012-.03.018-.043.03a2.603 2.603 0 0 1-.136.094l.018.037h.007l.26-.037h.006c.161-.025.322-.056.483-.087.044-.006.093-.019.137-.031l.087-.019c.043-.006.086-.018.13-.024.037-.013.074-.02.111-.031.62-.15 1.221-.354 1.798-.595a9.926 9.926 0 0 1-3.85 3.142c.714-.05 1.426-.167 2.114-.366a9.903 9.903 0 0 0 5.857-4.68 9.893 9.893 0 0 1-1.667 3.986 9.758 9.758 0 0 0 1.655-1.376 9.824 9.824 0 0 0 2.61-5.268c.21.98.272 1.99.18 2.987 4.474-6.241.371-12.712-1.346-14.416-.006-.013-.012-.019-.012-.031-.006.006-.006.006-.006.012 0-.006 0-.006-.007-.012 0 .074-.006.148-.012.223a8.34 8.34 0 0 1-.062.415c-.03.136-.068.273-.105.41-.044.13-.093.266-.15.396a5.322 5.322 0 0 1-.185.378 4.735 4.735 0 0 1-.477.688c-.093.111-.192.21-.292.31a3.994 3.994 0 0 1-.18.155l-.142.124a3.459 3.459 0 0 1-.347.241 4.295 4.295 0 0 1-.366.211c-.13.062-.26.118-.39.174a4.364 4.364 0 0 1-.818.223c-.143.025-.285.037-.422.05a4.914 4.914 0 0 1-.297.012 4.66 4.66 0 0 1-.422-.025 3.137 3.137 0 0 1-.421-.062 3.136 3.136 0 0 1-.415-.105h-.007c.137-.013.273-.025.41-.05a4.493 4.493 0 0 0 .818-.223c.136-.05.266-.112.39-.174.13-.062.248-.13.372-.204.118-.08.235-.161.347-.248.112-.087.217-.18.316-.279.105-.093.198-.198.291-.304.093-.111.18-.223.26-.334.013-.019.026-.044.038-.062.062-.1.124-.199.18-.298a4.272 4.272 0 0 0 .334-.775c.044-.13.075-.266.106-.403.025-.142.05-.278.062-.415.012-.142.025-.285.025-.421 0-.1-.007-.199-.013-.298a6.726 6.726 0 0 0-.05-.415 4.493 4.493 0 0 0-.092-.415c-.044-.13-.087-.267-.137-.397-.05-.13-.111-.26-.173-.384-.069-.124-.137-.248-.211-.366a6.843 6.843 0 0 0-.248-.34c-.093-.106-.186-.212-.285-.317a3.878 3.878 0 0 0-.161-.155c-.28-.217-.57-.421-.862-.607a1.154 1.154 0 0 0-.124-.062 2.415 2.415 0 0 0-.589-.26Z"/></symbol>
+  <symbol id="b-nextdotjs" viewBox="0 0 24 24"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></symbol>
+  <symbol id="b-docker" viewBox="0 0 24 24"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></symbol>
+  <symbol id="b-almalinux" viewBox="0 0 24 24"><path d="M23.994 15.133c.079 1.061-.668 1.927-1.69 2.005a1.8 1.8 0 0 1-1.928-1.651c-.078-1.062.63-1.849 1.691-1.967 1.023-.078 1.849.59 1.927 1.613zm-12.623 4.955c-.944 0-1.73.786-1.73 1.809 0 1.14.747 1.848 1.887 1.848.904-.04 1.691-.865 1.691-1.809 0-.983-.904-1.848-1.848-1.848zm1.061-9.675c-.039-.865-.078-1.73.08-2.556.156-.944.314-1.887.904-2.674.707-.983 1.809-.944 2.399.118.314.511.432 1.062.471 1.652 0 .354.158.432.472.393.944-.157 1.888-.157 2.792.197.118.039.236.118.394 0 .314-.276.393-1.652.196-2.006-.354-.63-.904-.55-1.455-.55-.629.039-1.18-.158-1.612-.67-.393-.471-.511-1.06-.59-1.65-.04-.276-.079-.512-.315-.709-.55-.55-1.809-.432-2.477.118-2.556 2.045-2.989 5.467-1.534 8.18.04.118.118.236.275.157zm7.984 3.658c.354-.511.865-.747 1.415-.983a.973.973 0 0 0 .59-.472c.354-.669-.078-1.81-.747-2.36-2.595-2.006-5.938-1.612-8.18.433-.118.078-.157.196-.078.314.786-.236 1.612-.472 2.477-.51.905-.08 1.848-.158 2.753.235 1.14.472 1.337 1.534.472 2.36-.393.393-.905.668-1.455.825-.315.08-.354.236-.236.551.354.865.59 1.77.472 2.753-.04.157-.079.275.078.393.354.236 1.691 0 1.967-.275.511-.472.314-1.023.196-1.534-.157-.63-.078-1.219.276-1.73zm-7.197-2.045c-.118-.079-.197-.118-.315 0 .472.708.905 1.455 1.259 2.241.314.866.668 1.73.55 2.714-.118 1.18-1.1 1.69-2.123 1.101-.511-.275-.905-.669-1.22-1.14-.196-.276-.393-.276-.629-.08-.747.63-1.533 1.102-2.516 1.26-.158 0-.315 0-.394.157-.118.393.472 1.612.826 1.809.59.354 1.062 0 1.534-.276.55-.314 1.101-.432 1.73-.236.59.197.983.63 1.337 1.102.158.196.315.353.63.432.747.197 1.77-.59 2.084-1.376 1.18-3.028-.157-6.135-2.753-7.708zm-2.556 2.438c.472-.669.826-1.416.983-2.202-.157-.04-.197.04-.315.078-.904.944-1.848 1.849-3.067 2.478-.472.236-.983.433-1.534.433-.865 0-1.376-.551-1.298-1.416a2.92 2.92 0 0 1 .787-1.849c.236-.275.236-.432-.04-.668-.786-.55-1.494-1.22-1.848-2.124-.078-.275-.275-.275-.51-.157a4.293 4.293 0 0 0-.434.236c-1.022.63-1.14 1.416-.275 2.28.63.63.944 1.338.708 2.203-.118.433-.354.747-.63 1.101a.95.95 0 0 0-.235.787c.079.747.826 1.494 1.73 1.573 2.517.236 4.562-.63 5.978-2.753zm-4.68-5.152c1.376 1.18 3.067 1.455 4.837 1.377.157 0 .315 0 .354-.118.04-.197-.157-.197-.275-.236-.826-.354-1.691-.63-2.438-1.14S6.848 8.25 6.534 7.266c-.236-.747.078-1.415.825-1.651.669-.236 1.337-.236 1.967 0 .393.157.55.078.629-.354.118-.747.354-1.455.826-2.085.55-.786.55-.865-.354-1.376-.04 0-.04-.04-.079-.04-.865-.471-1.534-.196-1.848.709-.472 1.376-1.377 1.887-2.832 1.612-.196-.04-.393-.079-.472-.079-.747.118-1.18.55-1.297 1.14-.158 1.81.786 3.107 2.084 4.17zm-2.32 3.658c-.079-.944-1.023-1.652-2.045-1.534-.905.079-1.691 1.022-1.613 1.966.08.983 1.023 1.77 1.967 1.652 1.14-.079 1.73-1.18 1.69-2.084zm15.18-8.298c.943-.079 1.73-.983 1.651-1.927-.078-.983-1.022-1.77-2.005-1.691-1.023.079-1.73.983-1.652 1.966s.983 1.73 2.006 1.652zm-12.27-.826c1.062-.157 1.77-1.023 1.652-2.045C8.107.897 7.163.149 6.18.267c-1.062.118-1.691.944-1.573 2.085.118.865 1.061 1.612 1.966 1.494z"/></symbol>
+  <symbol id="b-googledrive" viewBox="0 0 24 24"><path d="M12.01 1.485c-2.082 0-3.754.02-3.743.047.01.02 1.708 3.001 3.774 6.62l3.76 6.574h3.76c2.081 0 3.753-.02 3.742-.047-.005-.02-1.708-3.001-3.775-6.62l-3.76-6.574zm-4.76 1.73a789.828 789.861 0 0 0-3.63 6.319L0 15.868l1.89 3.298 1.885 3.297 3.62-6.335 3.618-6.33-1.88-3.287C8.1 4.704 7.255 3.22 7.25 3.214zm2.259 12.653-.203.348c-.114.198-.96 1.672-1.88 3.287a423.93 423.948 0 0 1-1.698 2.97c-.01.026 3.24.042 7.222.042h7.244l1.796-3.157c.992-1.734 1.85-3.23 1.906-3.323l.104-.167h-7.249z"/></symbol>
+  <symbol id="b-googledocs" viewBox="0 0 24 24"><path d="M14.727 6.727H14V0H4.91c-.905 0-1.637.732-1.637 1.636v20.728c0 .904.732 1.636 1.636 1.636h14.182c.904 0 1.636-.732 1.636-1.636V6.727h-6zm-.545 10.455H7.09v-1.364h7.09v1.364zm2.727-3.273H7.091v-1.364h9.818v1.364zm0-3.273H7.091V9.273h9.818v1.363zM14.727 6h6l-6-6v6z"/></symbol>
+  <symbol id="b-googlesheets" viewBox="0 0 24 24"><path d="M11.318 12.545H7.91v-1.909h3.41v1.91zM14.728 0v6h6l-6-6zm1.363 10.636h-3.41v1.91h3.41v-1.91zm0 3.273h-3.41v1.91h3.41v-1.91zM20.727 6.5v15.864c0 .904-.732 1.636-1.636 1.636H4.909a1.636 1.636 0 0 1-1.636-1.636V1.636C3.273.732 4.005 0 4.909 0h9.318v6.5h6.5zm-3.273 2.773H6.545v7.909h10.91v-7.91zm-6.136 4.636H7.91v1.91h3.41v-1.91z"/></symbol>
+  <symbol id="b-typescript" viewBox="0 0 24 24"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></symbol>
+  <symbol id="b-php" viewBox="0 0 24 24"><path d="M7.01 10.207h-.944l-.515 2.648h.838c.556 0 .97-.105 1.242-.314.272-.21.455-.559.55-1.049.092-.47.05-.802-.124-.995-.175-.193-.523-.29-1.047-.29zM12 5.688C5.373 5.688 0 8.514 0 12s5.373 6.313 12 6.313S24 15.486 24 12c0-3.486-5.373-6.312-12-6.312zm-3.26 7.451c-.261.25-.575.438-.917.551-.336.108-.765.164-1.285.164H5.357l-.327 1.681H3.652l1.23-6.326h2.65c.797 0 1.378.209 1.744.628.366.418.476 1.002.33 1.752a2.836 2.836 0 0 1-.305.847c-.143.255-.33.49-.561.703zm4.024.715l.543-2.799c.063-.318.039-.536-.068-.651-.107-.116-.336-.174-.687-.174H11.46l-.704 3.625H9.388l1.23-6.327h1.367l-.327 1.682h1.218c.767 0 1.295.134 1.586.401s.378.7.263 1.299l-.572 2.944h-1.389zm7.597-2.265a2.782 2.782 0 0 1-.305.847c-.143.255-.33.49-.561.703a2.44 2.44 0 0 1-.917.551c-.336.108-.765.164-1.286.164h-1.18l-.327 1.682h-1.378l1.23-6.326h2.649c.797 0 1.378.209 1.744.628.366.417.477 1.001.331 1.751zM17.766 10.207h-.943l-.516 2.648h.838c.557 0 .971-.105 1.242-.314.272-.21.455-.559.551-1.049.092-.47.049-.802-.125-.995s-.524-.29-1.047-.29z"/></symbol>
+  <symbol id="b-laravel" viewBox="0 0 24 24"><path d="M23.642 5.43a.364.364 0 01.014.1v5.149c0 .135-.073.26-.189.326l-4.323 2.49v4.934a.378.378 0 01-.188.326L9.93 23.949a.316.316 0 01-.066.027c-.008.002-.016.008-.024.01a.348.348 0 01-.192 0c-.011-.002-.02-.008-.03-.012-.02-.008-.042-.014-.062-.025L.533 18.755a.376.376 0 01-.189-.326V2.974c0-.033.005-.066.014-.098.003-.012.01-.02.014-.032a.369.369 0 01.023-.058c.004-.013.015-.022.023-.033l.033-.045c.012-.01.025-.018.037-.027.014-.012.027-.024.041-.034H.53L5.043.05a.375.375 0 01.375 0L9.93 2.647h.002c.015.01.027.021.04.033l.038.027c.013.014.02.03.033.045.008.011.02.021.025.033.01.02.017.038.024.058.003.011.01.021.013.032.01.031.014.064.014.098v9.652l3.76-2.164V5.527c0-.033.004-.066.013-.098.003-.01.01-.02.013-.032a.487.487 0 01.024-.059c.007-.012.018-.02.025-.033.012-.015.021-.03.033-.043.012-.012.025-.02.037-.028.014-.01.026-.023.041-.032h.001l4.513-2.598a.375.375 0 01.375 0l4.513 2.598c.016.01.027.021.042.031.012.01.025.018.036.028.013.014.022.03.034.044.008.012.019.021.024.033.011.02.018.04.024.06.006.01.012.021.015.032zm-.74 5.032V6.179l-1.578.908-2.182 1.256v4.283zm-4.51 7.75v-4.287l-2.147 1.225-6.126 3.498v4.325zM1.093 3.624v14.588l8.273 4.761v-4.325l-4.322-2.445-.002-.003H5.04c-.014-.01-.025-.021-.04-.031-.011-.01-.024-.018-.035-.027l-.001-.002c-.013-.012-.021-.025-.031-.04-.01-.011-.021-.022-.028-.036h-.002c-.008-.014-.013-.031-.02-.047-.006-.016-.014-.027-.018-.043a.49.49 0 01-.008-.057c-.002-.014-.006-.027-.006-.041V5.789l-2.18-1.257zM5.23.81L1.47 2.974l3.76 2.164 3.758-2.164zm1.956 13.505l2.182-1.256V3.624l-1.58.91-2.182 1.255v9.435zm11.581-10.95l-3.76 2.163 3.76 2.163 3.759-2.164zm-.376 4.978L16.21 7.087 14.63 6.18v4.283l2.182 1.256 1.58.908zm-8.65 9.654l5.514-3.148 2.756-1.572-3.757-2.163-4.323 2.489-3.941 2.27z"/></symbol>
+  <symbol id="b-react" viewBox="0 0 24 24"><path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></symbol>
+  <symbol id="b-mysql" viewBox="0 0 24 24"><path d="M16.405 5.501c-.115 0-.193.014-.274.033v.013h.014c.054.104.146.18.214.273.054.107.1.214.154.32l.014-.015c.094-.066.14-.172.14-.333-.04-.047-.046-.094-.08-.14-.04-.067-.126-.1-.18-.153zM5.77 18.695h-.927a50.854 50.854 0 00-.27-4.41h-.008l-1.41 4.41H2.45l-1.4-4.41h-.01a72.892 72.892 0 00-.195 4.41H0c.055-1.966.192-3.81.41-5.53h1.15l1.335 4.064h.008l1.347-4.064h1.095c.242 2.015.384 3.86.428 5.53zm4.017-4.08c-.378 2.045-.876 3.533-1.492 4.46-.482.716-1.01 1.073-1.583 1.073-.153 0-.34-.046-.566-.138v-.494c.11.017.24.026.386.026.268 0 .483-.075.647-.222.197-.18.295-.382.295-.605 0-.155-.077-.47-.23-.944L6.23 14.615h.91l.727 2.36c.164.536.233.91.205 1.123.4-1.064.678-2.227.835-3.483zm12.325 4.08h-2.63v-5.53h.885v4.85h1.745zm-3.32.135l-1.016-.5c.09-.076.177-.158.255-.25.433-.506.648-1.258.648-2.253 0-1.83-.718-2.746-2.155-2.746-.704 0-1.254.232-1.65.697-.43.508-.646 1.256-.646 2.245 0 .972.19 1.686.574 2.14.35.41.877.615 1.583.615.264 0 .506-.033.725-.098l1.325.772.36-.622zM15.5 17.588c-.225-.36-.337-.94-.337-1.736 0-1.393.424-2.09 1.27-2.09.443 0 .77.167.977.5.224.362.336.936.336 1.723 0 1.404-.424 2.108-1.27 2.108-.445 0-.77-.167-.978-.5zm-1.658-.425c0 .47-.172.856-.516 1.156-.344.3-.803.45-1.384.45-.543 0-1.064-.172-1.573-.515l.237-.476c.438.22.833.328 1.19.328.332 0 .593-.073.783-.22a.754.754 0 00.3-.615c0-.33-.23-.61-.648-.845-.388-.213-1.163-.657-1.163-.657-.422-.307-.632-.636-.632-1.177 0-.45.157-.81.47-1.085.315-.278.72-.415 1.22-.415.512 0 .98.136 1.4.41l-.213.476a2.726 2.726 0 00-1.064-.23c-.283 0-.502.068-.654.206a.685.685 0 00-.248.524c0 .328.234.61.666.85.393.215 1.187.67 1.187.67.433.305.648.63.648 1.168zm9.382-5.852c-.535-.014-.95.04-1.297.188-.1.04-.26.04-.274.167.055.053.063.14.11.214.08.134.218.313.346.407.14.11.28.216.427.31.26.16.555.255.81.416.145.094.293.213.44.313.073.05.12.14.214.172v-.02c-.046-.06-.06-.147-.105-.214-.067-.067-.134-.127-.2-.193a3.223 3.223 0 00-.695-.675c-.214-.146-.682-.35-.77-.595l-.013-.014c.146-.013.32-.066.46-.106.227-.06.435-.047.67-.106.106-.027.213-.06.32-.094v-.06c-.12-.12-.21-.283-.334-.395a8.867 8.867 0 00-1.104-.823c-.21-.134-.476-.22-.697-.334-.08-.04-.214-.06-.26-.127-.12-.146-.19-.34-.275-.514a17.69 17.69 0 01-.547-1.163c-.12-.262-.193-.523-.34-.763-.69-1.137-1.437-1.826-2.586-2.5-.247-.14-.543-.2-.856-.274-.167-.008-.334-.02-.5-.027-.11-.047-.216-.174-.31-.235-.38-.24-1.364-.76-1.644-.072-.18.434.267.862.422 1.082.115.153.26.328.34.5.047.116.06.235.107.356.106.294.207.622.347.897.073.14.153.287.247.413.054.073.146.107.167.227-.094.136-.1.334-.154.5-.24.757-.146 1.693.194 2.25.107.166.362.534.703.393.3-.12.234-.5.32-.835.02-.08.007-.133.048-.187v.015c.094.188.188.367.274.555.206.328.566.668.867.895.16.12.287.328.487.402v-.02h-.015c-.043-.058-.1-.086-.154-.133a3.445 3.445 0 01-.35-.4 8.76 8.76 0 01-.747-1.218c-.11-.21-.202-.436-.29-.643-.04-.08-.04-.2-.107-.24-.1.146-.247.273-.32.453-.127.288-.14.642-.188 1.01-.027.007-.014 0-.027.014-.214-.052-.287-.274-.367-.46-.2-.475-.233-1.238-.06-1.785.047-.14.247-.582.167-.716-.042-.127-.174-.2-.247-.303a2.478 2.478 0 01-.24-.427c-.16-.374-.24-.788-.414-1.162-.08-.173-.22-.354-.334-.513-.127-.18-.267-.307-.368-.52-.033-.073-.08-.194-.027-.274.014-.054.042-.075.094-.09.088-.072.335.022.422.062.247.1.455.194.662.334.094.066.195.193.315.226h.14c.214.047.455.014.655.073.355.114.675.28.962.46a5.953 5.953 0 012.085 2.286c.08.154.115.295.188.455.14.33.313.663.455.982.14.315.275.636.476.897.1.14.502.213.682.286.133.06.34.115.46.188.23.14.454.3.67.454.11.076.443.243.463.378z"/></symbol>
+  <symbol id="b-sonarqubeserver" viewBox="0 0 24 24"><path d="M12 0a.774.774 0 0 0-.775.775c0 .43.346.776.775.776 5.762 0 10.45 4.687 10.45 10.449 0 .43.345.775.775.775A.774.774 0 0 0 24 12c0-6.616-5.384-12-12-12zm0 3.932a.774.774 0 0 0-.775.775c0 .43.346.775.775.775A6.524 6.524 0 0 1 18.518 12c0 .43.346.775.775.775.43 0 .775-.346.775-.775 0-4.448-3.62-8.068-8.068-8.068zm0 3.925a.774.774 0 0 0-.775.776c0 .43.346.775.775.775A2.597 2.597 0 0 1 14.592 12c0 .43.346.775.775.775.43 0 .776-.346.776-.775A4.145 4.145 0 0 0 12 7.857zM.775 11.225A.774.774 0 0 0 0 12c0 6.616 5.384 12 12 12 .43 0 .775-.346.775-.775a.774.774 0 0 0-.775-.776C6.238 22.45 1.55 17.762 1.55 12a.774.774 0 0 0-.775-.775zm3.932 0a.774.774 0 0 0-.775.775c0 4.448 3.62 8.068 8.068 8.068.43 0 .775-.346.775-.775a.774.774 0 0 0-.775-.775A6.524 6.524 0 0 1 5.482 12a.774.774 0 0 0-.775-.775zm3.926 0a.774.774 0 0 0-.776.775A4.145 4.145 0 0 0 12 16.143c.43 0 .775-.347.775-.776a.774.774 0 0 0-.775-.775A2.597 2.597 0 0 1 9.408 12a.774.774 0 0 0-.775-.775z"/></symbol>
+  <symbol id="b-express" viewBox="0 0 24 24"><path d="M24 18.588a1.529 1.529 0 01-1.895-.72l-3.45-4.771-.5-.667-4.003 5.444a1.466 1.466 0 01-1.802.708l5.158-6.92-4.798-6.251a1.595 1.595 0 011.9.666l3.576 4.83 3.596-4.81a1.435 1.435 0 011.788-.668L21.708 7.9l-2.522 3.283a.666.666 0 000 .994l4.804 6.412zM.002 11.576l.42-2.075c1.154-4.103 5.858-5.81 9.094-3.27 1.895 1.489 2.368 3.597 2.275 5.973H1.116C.943 16.447 4.005 19.009 7.92 17.7a4.078 4.078 0 002.582-2.876c.207-.666.548-.78 1.174-.588a5.417 5.417 0 01-2.589 3.957 6.272 6.272 0 01-7.306-.933 6.575 6.575 0 01-1.64-3.858c0-.235-.08-.455-.134-.666A88.33 88.33 0 010 11.577zm1.127-.286h9.654c-.06-3.076-2.001-5.258-4.59-5.278-2.882-.04-4.944 2.094-5.071 5.264z"/></symbol>
+  <symbol id="b-angular" viewBox="0 0 24 24"><path d="M16.712 17.711H7.288l-1.204 2.916L12 24l5.916-3.373-1.204-2.916ZM14.692 0l7.832 16.855.814-12.856L14.692 0ZM9.308 0 .662 3.999l.814 12.856L9.308 0Zm-.405 13.93h6.198L12 6.396 8.903 13.93Z"/></symbol>
+  <symbol id="b-mongodb" viewBox="0 0 24 24"><path d="M17.193 9.555c-1.264-5.58-4.252-7.414-4.573-8.115-.28-.394-.53-.954-.735-1.44-.036.495-.055.685-.523 1.184-.723.566-4.438 3.682-4.74 10.02-.282 5.912 4.27 9.435 4.888 9.884l.07.05A73.49 73.49 0 0111.91 24h.481c.114-1.032.284-2.056.51-3.07.417-.296.604-.463.85-.693a11.342 11.342 0 003.639-8.464c.01-.814-.103-1.662-.197-2.218zm-5.336 8.195s0-8.291.275-8.29c.213 0 .49 10.695.49 10.695-.381-.045-.765-1.76-.765-2.405z"/></symbol>
+  <symbol id="b-socketdotio" viewBox="0 0 24 24"><path d="M11.9362.0137a12.1694 12.1694 0 00-2.9748.378C4.2816 1.5547.5678 5.7944.0918 10.6012c-.59 4.5488 1.7079 9.2856 5.6437 11.6345 3.8608 2.4179 9.0926 2.3199 12.8734-.223 3.3969-2.206 5.5118-6.2277 5.3858-10.2845-.058-4.0159-2.31-7.9167-5.7588-9.9796C16.354.5876 14.1431.0047 11.9362.0137zm-.063 1.696c4.9448-.007 9.7886 3.8137 10.2815 8.9245.945 5.6597-3.7528 11.4125-9.4875 11.5795-5.4538.544-10.7245-4.0798-10.8795-9.5566-.407-4.4338 2.5159-8.8346 6.6977-10.2995a9.1126 9.1126 0 013.3878-.647zm5.0908 3.2248c-2.6869 2.0849-5.2598 4.3078-7.8886 6.4567 1.2029.017 2.4118.016 3.6208.01 1.41-2.165 2.8589-4.3008 4.2678-6.4667zm-5.6647 7.6536c-1.41 2.166-2.86 4.3088-4.2699 6.4737 2.693-2.0799 5.2548-4.3198 7.9017-6.4557a255.4132 255.4132 0 00-3.6318-.018z"/></symbol>
+  <symbol id="b-vuedotjs" viewBox="0 0 24 24"><path d="M24,1.61H14.06L12,5.16,9.94,1.61H0L12,22.39ZM12,14.08,5.16,2.23H9.59L12,6.41l2.41-4.18h4.43Z"/></symbol>
+</svg>
+
+<main class="deck">
+
+<!-- ============================================================ 1 PORTADA -->
+<section class="slide cover">
+  <div class="ribbon-line"></div><div class="ribbon"></div>
+  <img class="cv-uta" src="img/uta_logo.png" alt="Universidad Técnica de Ambato">
+  <img class="cv-fisei" src="img/logofisei.png" alt="FISEI">
+  <div class="cv-body">
+    <div class="cv-u">UNIVERSIDAD TÉCNICA DE AMBATO</div>
+    <div class="cv-f">FACULTAD DE INGENIERÍA EN SISTEMAS,<br>ELECTRÓNICA E INDUSTRIAL</div>
+    <div class="cv-c">CARRERA DE SOFTWARE</div>
+    <div class="cv-tema">TEMA</div>
+    <h1>SISTEMA WEB MODULAR PARA LA GESTIÓN DOCUMENTAL ACADÉMICO-ADMINISTRATIVA DE LA FISEI-UTA Y SU INCIDENCIA EN LA MANTENIBILIDAD (ISO/IEC 25010)</h1>
+    <div class="cv-rule"><i></i><b></b><i></i></div>
+    <p class="cv-grado">Trabajo de titulación, modalidad Proyecto de Investigación, previo a la obtención del título de Ingeniero de Software</p>
+    <div class="cv-who"><b>AUTOR:</b> Jair Alexis Mera Toasa<br><b>TUTOR:</b> Ing. Santiago David Jara Moya MSc.</div>
+    <div class="cv-place">Ambato, Ecuador · 2026</div>
+  </div>
+</section>
+
+<!-- ============================================================ 2 CONTEXTO -->
+<section class="slide std" data-sec="intro">
+  <div class="main">
+    <div class="kicker">Introducción · Contexto</div>
+    <h2 class="t">2,100 documentos al año y dos versiones previas de GENDocs</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:26px;align-items:stretch">
+      <div class="col" style="width:340px;gap:14px">
+        <div class="card red">
+          <div class="lbl">Documentos oficiales al año</div>
+          <div class="big" style="font-size:84px;margin-top:2px">2,100</div>
+          <div class="sm" style="margin-top:6px">actas, resoluciones, acuerdos y actas de grado</div>
+        </div>
+        <div class="card f1">
+          <div class="lbl" style="margin-bottom:10px">Cada documento exige</div>
+          <div class="sm icl" style="margin-bottom:10px"><svg class="ic g"><use href="#i-hash"/></svg>numeración secuencial</div>
+          <div class="sm icl" style="margin-bottom:10px"><svg class="ic g"><use href="#i-cloud"/></svg>archivo en la nube</div>
+          <div class="sm icl"><svg class="ic g"><use href="#i-lock"/></svg>acceso diferenciado</div>
+        </div>
+      </div>
+      <div class="f1 row" style="gap:18px;align-items:stretch">
+        <div class="f1 tlc">
+          <div class="yr v2c">2021 · V1</div>
+          <div class="tick"><i style="background:var(--v2)"></i></div>
+          <div class="card out f1">
+            <div style="display:flex;gap:10px;margin-bottom:8px"><svg class="bi" style="fill:#FF2D20"><use href="#b-laravel"/></svg><svg class="bi" style="fill:#4FC08D"><use href="#b-vuedotjs"/></svg></div><div class="sm"><b>Laravel y VueJS</b></div>
+            <div class="sm" style="margin-top:8px">Automatizó los procedimientos manuales</div>
+            <div class="lbl" style="margin-top:18px">Pendiente</div>
+            <div class="nt" style="margin-top:2px">archivos, numeración y acceso granular</div>
+          </div>
+        </div>
+        <div class="f1 tlc">
+          <div class="yr v2c">2022 · V2</div>
+          <div class="tick"><i style="background:var(--v2)"></i></div>
+          <div class="card out f1">
+            <div style="display:flex;gap:10px;margin-bottom:8px"><svg class="bi" style="fill:#FF2D20"><use href="#b-laravel"/></svg><svg class="bi" style="fill:#61DAFB"><use href="#b-react"/></svg></div><div class="sm"><b>Laravel y ReactJS</b></div>
+            <div class="sm" style="margin-top:8px">Sumó Titulación y el Consejo Académico</div>
+            <div class="lbl" style="margin-top:18px">Pendiente</div>
+            <div class="nt" style="margin-top:2px">módulos fijos en el código; el reinicio anual borraba registros</div>
+          </div>
+        </div>
+        <div class="tlc" style="width:214px">
+          <div class="yr g">2026</div>
+          <div class="tick last"><i style="background:var(--g)"></i></div>
+          <div class="card red f1">
+            <div class="sm"><b>Esta investigación</b></div>
+            <div class="sm" style="margin-top:8px">Versión modular, medida frente a V2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: [13] tesis de GENDocs V1; [14] tesis de GENDocs V2.</div>
+</section>
+
+<!-- ============================================================ 3 PROBLEMA -->
+<section class="slide std" data-sec="intro">
+  <div class="main">
+    <div class="kicker">Introducción · El problema</div>
+    <h2 class="t">Un grado de modularidad bajo y sin evaluar encarecía cada cambio</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:0;justify-content:center">
+      <div class="row" style="gap:14px;align-items:stretch">
+        <div class="lbl" style="width:104px;flex:none;align-self:center">Efectos</div>
+        <div class="pb ef">Mantenimiento: del 50 al 90 % de los recursos</div>
+        <div class="pb ef">Seis meses sin acceso a los documentos (2024)</div>
+        <div class="pb ef">El reinicio anual borra registros históricos</div>
+        <div class="pb ef">Cada proceso nuevo exige reescribir código</div>
+      </div>
+      <div class="ups"><div>↑</div><div>↑</div><div>↑</div><div>↑</div></div>
+      <div class="row" style="gap:14px;align-items:stretch">
+        <div class="lbl" style="width:104px;flex:none;align-self:center">Problema</div>
+        <div class="card red f1" style="padding:10px 18px;text-align:center;font-size:24px;line-height:1.2;font-weight:700">Bajo grado de modularidad del sistema, con impacto medible en la mantenibilidad</div>
+      </div>
+      <div class="ups"><div>↑</div><div>↑</div><div>↑</div><div>↑</div></div>
+      <div class="row" style="gap:14px;align-items:stretch">
+        <div class="lbl" style="width:104px;flex:none;align-self:center">Causas</div>
+        <div class="pb ca">Módulos y procesos fijos en el código</div>
+        <div class="pb ca">Sin control de acceso granular</div>
+        <div class="pb ca">Dependencia técnica de quien lo desarrolló</div>
+        <div class="pb ca">Sin evaluación frente a ISO/IEC 25010</div>
+      </div>
+      <div class="card soft" style="margin-top:22px;padding:12px 20px;display:flex;gap:20px;align-items:center">
+        <div class="lbl" style="color:var(--g);width:160px;flex:none">Pregunta de investigación</div>
+        <div class="sm">¿De qué manera incide el <b>grado de modularidad</b> del sistema sobre su <b>mantenibilidad</b>, según la norma ISO/IEC 25010?</div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: árbol de problemas, Anexo A; [2] Hunt, 2008; [3] Hejazi, 2013; [4] Christa, 2016.</div>
+</section>
+
+<!-- ============================================================ 4 ANTECEDENTES -->
+<section class="slide std" data-sec="intro">
+  <div class="main">
+    <div class="kicker">Introducción · Antecedentes investigativos</div>
+    <h2 class="t">La literatura liga modularidad y mantenibilidad, pero casi no en gestión documental académica</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:36px">
+      <div style="width:500px">
+        <div class="lbl" style="margin-bottom:8px">Mapeo sistemático en ocho bases</div>
+        <svg viewBox="0 0 500 330" width="500" height="330">
+          <g font-size="24">
+            <polygon points="0,0 500,0 472,74 28,74" fill="#E8E2DE"/>
+            <text x="250" y="47" text-anchor="middle"><tspan font-weight="700" font-size="32">9,997</tspan> registros brutos</text>
+            <polygon points="32,84 468,84 440,158 60,158" fill="#D9C9C4"/>
+            <text x="250" y="131" text-anchor="middle"><tspan font-weight="700" font-size="32">8,139</tspan> sin duplicados</text>
+            <polygon points="64,168 436,168 408,242 92,242" fill="#C9767C"/>
+            <text x="250" y="215" text-anchor="middle" fill="#fff"><tspan font-weight="700" font-size="32">408</tspan> elegibles</text>
+            <polygon points="96,252 404,252 376,330 124,330" fill="#901B23"/>
+            <text x="250" y="301" text-anchor="middle" fill="#fff"><tspan font-weight="700" font-size="32">32</tspan> estudios</text>
+          </g>
+        </svg>
+      </div>
+      <div class="f1 col" style="gap:16px;justify-content:center">
+        <div class="card">
+          <div class="lbl">De monolito a modular, caso de estudio [5]</div>
+          <div class="row" style="margin-top:10px;gap:14px">
+            <div style="width:150px"><div class="mid" style="font-size:30px;white-space:nowrap">−75 %</div><div class="nt">acoplamiento (CBO)</div></div>
+            <div class="f1"><div class="mid" style="font-size:30px;white-space:nowrap">−72 a −76 %</div><div class="nt">complejidad ciclomática</div></div>
+            <div class="f1"><div class="mid" style="font-size:30px;white-space:nowrap">−88 a −94 %</div><div class="nt">deuda técnica</div></div>
+          </div>
+        </div>
+        <div class="card red" style="display:flex;gap:20px;align-items:center">
+          <div class="big" style="font-size:72px;white-space:nowrap">2<span style="font-size:36px"> de 32</span></div>
+          <div class="sm">estudios tratan la gestión documental académica: las tesis de GENDocs V1 y V2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: [5] Milić y Makajić-Nikolić, 2022; [13], [14] tesis de GENDocs. Los 32 estudios son 30 artículos y 2 tesis; protocolo de [19] Kitchenham, 2015, y [20], [21] Petersen, 2008 y 2015.</div>
+</section>
+
+<!-- ============================================================ 5 OBJETIVO GENERAL -->
+<section class="slide std" data-sec="obj">
+  <div class="main">
+    <div class="kicker">Objetivos · Objetivo general</div>
+    <h2 class="t">Desarrollar el sistema y evaluar la incidencia de su modularidad</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:20px">
+      <div class="card red" style="padding:20px 28px">
+        <div style="font-size:30px;line-height:1.24"><b>Desarrollar</b> un sistema web con arquitectura modular para la gestión documental académico-administrativa de la FISEI, <b>evaluando la incidencia del grado de modularidad sobre la mantenibilidad</b> mediante análisis estático basado en la norma ISO/IEC 25010.</div>
+      </div>
+      <div class="row f1" style="gap:0;align-items:center">
+        <div class="card out topline f1" style="padding:16px 22px">
+          <div class="lbl">Variable independiente</div>
+          <div class="mid" style="margin-top:6px">Grado de modularidad</div>
+          <div class="nt" style="margin-top:6px">del sistema web de gestión documental</div>
+        </div>
+        <div style="width:170px;flex:none;text-align:center">
+          <div class="sm g"><b>incide en</b></div>
+          <svg viewBox="0 0 150 20" width="150" height="20"><line x1="6" y1="10" x2="140" y2="10" stroke="#901B23" stroke-width="3.2" marker-end="url(#ah)"/></svg>
+        </div>
+        <div class="card out topline f1" style="padding:16px 22px">
+          <div class="lbl">Variable dependiente</div>
+          <div class="mid" style="margin-top:6px">Mantenibilidad</div>
+          <div class="nt" style="margin-top:6px">cinco <span style="white-space:nowrap">sub-características</span> de ISO/IEC 25010</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 6 OBJETIVOS ESPECÍFICOS -->
+<section class="slide std" data-sec="obj">
+  <div class="main">
+    <div class="kicker">Objetivos · Objetivos específicos</div>
+    <h2 class="t">Tres objetivos específicos: analizar, implementar y evaluar</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:14px;justify-content:center">
+      <div class="card out" style="display:flex;gap:22px;align-items:center;border-left:6px solid var(--g);padding:14px 22px">
+        <div class="big" style="width:36px;flex:none;text-align:center">1</div>
+        <div class="sm"><b>Analizar</b> el <b>grado de modularidad</b> del sistema de gestión documental GENDOCSv2 de la FISEI mediante métricas de <b>acoplamiento, cohesión y complejidad</b> del código fuente.</div>
+      </div>
+      <div class="card out" style="display:flex;gap:22px;align-items:center;border-left:6px solid var(--g);padding:14px 22px">
+        <div class="big" style="width:36px;flex:none;text-align:center">2</div>
+        <div class="sm"><b>Implementar</b> un sistema web con arquitectura modular que incorpore <b>configuración dinámica de módulos</b>, <b>organización automatizada de archivos en la nube</b> y <b>control de acceso granular</b> para la gestión documental de la FISEI.</div>
+      </div>
+      <div class="card out" style="display:flex;gap:22px;align-items:center;border-left:6px solid var(--g);padding:14px 22px">
+        <div class="big" style="width:36px;flex:none;text-align:center">3</div>
+        <div class="sm"><b>Evaluar</b> la <b>incidencia del grado de modularidad sobre la mantenibilidad</b> del sistema implementado mediante análisis estático de código y verificación del cumplimiento de requerimientos funcionales basado en las sub-características de la norma ISO/IEC 25010.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 7 DISEÑO METODOLÓGICO -->
+<section class="slide std" data-sec="met">
+  <div class="main">
+    <div class="kicker">Metodología de investigación</div>
+    <h2 class="t">Medir el antecedente, construir la versión modular y medirla con las mismas herramientas</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:14px">
+      <div class="row" style="gap:8px;align-items:stretch">
+        <div class="card f1 icl" style="padding:10px 16px"><svg class="ic lg v2c"><use href="#i-search"/></svg><div><div class="sm"><b>Medir GENDocs V2</b></div><div class="nt">objetivo 1</div></div></div>
+        <div class="arrow">→</div>
+        <div class="card red f1 icl" style="padding:10px 16px"><svg class="ic lg"><use href="#i-code"/></svg><div><div class="sm"><b>Construir GENDocs V3</b></div><div class="nt">objetivo 2</div></div></div>
+        <div class="arrow">→</div>
+        <div class="card f1 icl" style="padding:10px 16px"><svg class="ic lg g"><use href="#i-chart"/></svg><div><div class="sm"><b>Medir GENDocs V3</b></div><div class="nt">objetivo 3</div></div></div>
+      </div>
+      <div class="row f1" style="gap:14px">
+        <div class="card soft" style="width:330px;padding:14px 18px">
+          <div class="lbl">Modalidad</div>
+          <div class="sm" style="margin-top:8px">Enfoque <b>cuantitativo</b></div>
+          <div class="sm" style="margin-top:6px">Nivel <b>descriptivo-correlacional</b></div>
+          <div class="sm" style="margin-top:6px">Diseño <b>cuasi-experimental</b> antes-después, de caso único</div>
+        </div>
+        <div class="card out f1" style="padding:14px 18px">
+          <div class="icl"><svg class="ic g"><use href="#i-users"/></svg><span class="lbl">Población A · personal</span></div>
+          <div style="margin-top:4px"><span class="big" style="font-size:48px">10</span> <span class="nt">personas, censo</span></div>
+          <div class="sm" style="margin-top:6px"><b>1</b> secretaria de facultad</div>
+          <div class="nt">entrevista</div>
+          <div class="sm" style="margin-top:6px"><b>9</b> secretarias de carrera</div>
+          <div class="nt">cuestionario</div>
+        </div>
+        <div class="card out f1" style="padding:14px 18px">
+          <div class="icl"><svg class="ic g"><use href="#i-code"/></svg><span class="lbl">Población B · código fuente</span></div>
+          <div style="margin-top:4px"><span class="big" style="font-size:48px">2</span> <span class="nt">versiones, censo</span></div>
+          <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:24px;line-height:1.2">
+            <tr><td></td><td style="text-align:right;width:74px;font-weight:700;color:var(--v2)">V2</td><td style="text-align:right;width:74px;font-weight:700;color:var(--g)">V3</td></tr>
+            <tr><td style="padding-top:6px">Clases, backend</td><td style="text-align:right;padding-top:6px"><b>253</b></td><td style="text-align:right;padding-top:6px"><b>435</b></td></tr>
+            <tr><td style="padding-top:6px">Módulos, frontend</td><td style="text-align:right;padding-top:6px"><b>276</b></td><td style="text-align:right;padding-top:6px"><b>534</b></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: [53] Hernández Sampieri, 2014, para el diseño cuasi-experimental.</div>
+</section>
+
+<!-- ============================================================ 8 INSTRUMENTOS -->
+<section class="slide std" data-sec="met">
+  <div class="main">
+    <div class="kicker">Metodología · Instrumentos</div>
+    <h2 class="t">Dos instrumentos validados por jueces y con confiabilidad sobre 0.75</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:16px">
+      <div class="col" style="width:300px;gap:12px">
+        <div class="card out" style="padding:12px 16px">
+          <div class="icl"><svg class="ic g"><use href="#i-chat"/></svg><b class="sm">Entrevista</b></div>
+          <div class="sm" style="margin-top:4px">12 preguntas</div>
+          <div class="nt">secretaria de facultad</div>
+        </div>
+        <div class="card out" style="padding:12px 16px">
+          <div class="icl"><svg class="ic g"><use href="#i-clip"/></svg><b class="sm">Cuestionario</b></div>
+          <div class="sm" style="margin-top:4px">15 ítems</div>
+          <div class="nt">9 secretarias de carrera</div>
+        </div>
+        <div class="card soft f1" style="padding:12px 16px">
+          <div class="sm"><b>Tres bloques:</b> experiencia, necesidades y aceptación</div>
+        </div>
+      </div>
+      <div class="card f1" style="padding:14px 18px">
+        <div class="lbl">Juicio de tres expertos, de 1 a 5</div>
+        <table style="width:100%;border-collapse:collapse;margin-top:10px;font-size:24px;line-height:1.2">
+          <tr class="mut"><td></td><td style="text-align:right">Entrevista</td><td style="text-align:right;padding-left:14px">Cuestionario</td></tr>
+          <tr><td style="padding:7px 0">Claridad</td><td style="text-align:right"><b>4.22</b></td><td style="text-align:right"><b>4.31</b></td></tr>
+          <tr><td style="padding:7px 0">Coherencia</td><td style="text-align:right"><b>4.28</b></td><td style="text-align:right"><b>4.31</b></td></tr>
+          <tr><td style="padding:7px 0">Relevancia</td><td style="text-align:right"><b>4.22</b></td><td style="text-align:right"><b>4.29</b></td></tr>
+        </table>
+        <div class="sm" style="margin-top:16px">Los <b>27 reactivos</b> quedaron en banda alta o muy alta.</div>
+      </div>
+      <div class="card f1" style="padding:14px 18px">
+        <div class="lbl">Confiabilidad del cuestionario</div>
+        <svg viewBox="0 0 360 280" width="360" height="280" style="margin-top:6px">
+          <g font-size="24">
+            <text x="0" y="35">α global</text>     <rect x="124" y="14" width="174" height="28" fill="#901B23"/><text x="304" y="36" font-weight="700">0.83</text>
+            <text x="0" y="81">α bloque 1</text>   <rect x="124" y="60" width="160" height="28" fill="#C9767C"/><text x="290" y="82">0.76</text>
+            <text x="0" y="127">α bloque 2</text>  <rect x="124" y="106" width="168" height="28" fill="#C9767C"/><text x="298" y="128">0.80</text>
+            <text x="0" y="173">α bloque 3</text>  <rect x="124" y="152" width="164" height="28" fill="#C9767C"/><text x="294" y="174">0.78</text>
+            <text x="0" y="219">KR-20</text>       <rect x="124" y="198" width="164" height="28" fill="#901B23"/><text x="294" y="220" font-weight="700">0.78</text>
+            <line x1="124" y1="240" x2="346" y2="240" stroke="#bbb"/>
+            <line x1="281.5" y1="6" x2="281.5" y2="240" stroke="#1E1E1E" stroke-width="2" stroke-dasharray="5 4"/>
+            <text x="281.5" y="268" fill="#5E5E5E" text-anchor="middle">umbral 0.75</text>
+          </g>
+          <g class="ax" font-size="20" fill="#5E5E5E"><text x="124" y="264" text-anchor="middle">0</text></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: [56] Lawshe, 1975; [57] Cronbach, 1951; [58] Kuder y Richardson, 1937. Jueces: docentes de la FISEI con cuarto nivel.</div>
+</section>
+
+<!-- ============================================================ 9 RESULTADOS DE LOS INSTRUMENTOS -->
+<section class="slide std" data-sec="met">
+  <div class="main">
+    <div class="kicker">Metodología · Resultados de los instrumentos</div>
+    <h2 class="t">El personal pidió autonomía, archivos ordenados en la nube y acceso por carrera</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:20px">
+      <div style="width:752px">
+        <svg viewBox="0 0 752 352" width="752" height="352">
+          <g stroke="#E6DDD8" stroke-width="1.5"><line x1="412" y1="0" x2="412" y2="326"/><line x1="472" y1="0" x2="472" y2="326"/><line x1="532" y1="0" x2="532" y2="326"/><line x1="592" y1="0" x2="592" y2="326"/><line x1="652" y1="0" x2="652" y2="326"/></g>
+          <g font-size="24">
+            <text x="400" y="23" text-anchor="end">Respaldo ante fallas</text><rect x="412" y="4" width="233" height="24" fill="#8C8C8C"/><text x="664" y="24">4.89</text>
+            <text x="400" y="59" text-anchor="end" font-weight="700" fill="#901B23">Autonomía sin el área técnica</text><rect x="412" y="40" width="227" height="24" fill="#901B23"/><text x="664" y="60" font-weight="700" fill="#901B23">4.78</text>
+            <text x="400" y="95" text-anchor="end">Formato y sello institucional</text><rect x="412" y="76" width="227" height="24" fill="#8C8C8C"/><text x="664" y="96">4.78</text>
+            <text x="400" y="131" text-anchor="end">Respuesta en pocos segundos</text><rect x="412" y="112" width="220" height="24" fill="#8C8C8C"/><text x="664" y="132">4.67</text>
+            <text x="400" y="167" text-anchor="end" font-weight="700" fill="#901B23">Organización automática en la nube</text><rect x="412" y="148" width="214" height="24" fill="#901B23"/><text x="664" y="168" font-weight="700" fill="#901B23">4.56</text>
+            <text x="400" y="203" text-anchor="end" font-weight="700" fill="#901B23">Acceso solo a la propia carrera</text><rect x="412" y="184" width="206" height="24" fill="#901B23"/><text x="664" y="204" font-weight="700" fill="#901B23">4.44</text>
+            <text x="400" y="239" text-anchor="end">Uso de herramientas externas</text><rect x="412" y="220" width="193" height="24" fill="#8C8C8C"/><text x="664" y="240">4.22</text>
+            <text x="400" y="275" text-anchor="end">Dificultad en tareas cotidianas</text><rect x="412" y="256" width="187" height="24" fill="#8C8C8C"/><text x="664" y="276">4.11</text>
+            <text x="400" y="311" text-anchor="end">Tiempo para localizar documentos</text><rect x="412" y="292" width="173" height="24" fill="#8C8C8C"/><text x="664" y="312">3.89</text>
+          </g>
+          <g class="ax" font-size="20" fill="#5E5E5E" text-anchor="middle"><text x="412" y="348">1</text><text x="472" y="348">2</text><text x="532" y="348">3</text><text x="592" y="348">4</text><text x="652" y="348">5</text></g>
+        </svg>
+        <div class="legend" style="margin-top:2px"><span><i class="sw" style="background:#901B23"></i>origen de las tres capacidades del objetivo 2</span><span>media de 1 a 5, n = 9</span></div>
+      </div>
+      <div class="col f1" style="gap:10px">
+        <div class="card red" style="padding:10px 16px"><div class="big" style="font-size:44px">88.9 %</div><div class="sm" style="margin-top:2px">perdió o no tuvo acceso a documentos</div></div>
+        <div class="card" style="padding:10px 16px"><div class="big" style="font-size:44px">88.9 %</div><div class="sm" style="margin-top:2px">pide carga masiva desde Excel</div></div>
+        <div class="card" style="padding:10px 16px"><div class="big" style="font-size:44px">77.8 %</div><div class="sm" style="margin-top:2px">duplicó plantillas a mano entre carreras</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: cuestionario estructurado a las nueve secretarias de carrera, ítems I1.1 a I3.3 y dicotómicos I1.4, I2.4 e I1.5.</div>
+</section>
+
+<!-- ============================================================ 10 MÉTRICAS -->
+<section class="slide std" data-sec="met">
+  <div class="main">
+    <div class="kicker">Metodología · Análisis estático</div>
+    <h2 class="t">Ocho métricas miden las cinco <span style="white-space:nowrap">sub-características</span> de la mantenibilidad</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:12px">
+      <table class="mx">
+        <colgroup><col style="width:310px"><col><col style="width:250px"></colgroup>
+        <thead><tr><th>Métrica</th><th>Sub-características que mide</th><th style="white-space:nowrap">Rango de referencia</th></tr></thead>
+        <tbody>
+          <tr><td>CBO, acoplamiento</td><td><span class="pill p-mod">Modularidad</span><span class="pill p-reu">Reusabilidad</span></td><td>menos de 5</td></tr>
+          <tr><td>LCOM, falta de cohesión</td><td><span class="pill p-mod">Modularidad</span></td><td>menos de 0.5</td></tr>
+          <tr><td>WMC, métodos ponderados</td><td><span class="pill p-ana">Analizabilidad</span><span class="pill p-mof">Modificabilidad</span></td><td>menos de 20</td></tr>
+          <tr><td>Complejidad ciclomática</td><td><span class="pill p-ana">Analizabilidad</span><span class="pill p-tes">Testeabilidad</span></td><td>1 a 10, baja</td></tr>
+          <tr><td>Complejidad cognitiva</td><td><span class="pill p-ana">Analizabilidad</span></td><td>contextual</td></tr>
+          <tr><td>Líneas duplicadas</td><td><span class="pill p-reu">Reusabilidad</span><span class="pill p-mof">Modificabilidad</span></td><td>menos de 5 %</td></tr>
+          <tr><td>Índice de mantenibilidad</td><td><span class="pill p-glo">Mantenibilidad global</span></td><td>65 o más</td></tr>
+          <tr><td>Deuda técnica</td><td><span class="pill p-glo">Mantenibilidad global</span></td><td>menor es mejor</td></tr>
+        </tbody>
+      </table>
+      <div class="sm"><b>Herramientas:</b> SonarQube, PHPMetrics (clases de V2), dependency-cruiser (dependencias y ciclos) y un analizador CK sobre ts-morph (clases de V3).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 11 DIVISOR OE1 -->
+<section class="slide div">
+  <div class="bar"></div>
+  <div class="eyebrow">OBJETIVO ESPECÍFICO 1</div>
+  <h2>Analizar el grado de modularidad de GENDocs V2</h2>
+  <p>Métricas de acoplamiento, cohesión y complejidad sobre el código fuente del sistema antecedente.</p>
+  <div class="bignum">01</div>
+</section>
+
+<!-- ============================================================ 12 GRADO DE MODULARIDAD DE V2 -->
+<section class="slide std" data-sec="oe1">
+  <div class="main">
+    <div class="kicker">Objetivo específico 1 · Grado de modularidad de V2</div>
+    <h2 class="t">El grado de modularidad de V2 resultó bajo por descomposición y por concentración</h2>
+    <div class="rule"></div>
+    <div class="body" style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px 16px">
+      <div class="card out" style="padding:12px 18px">
+        <div class="lbl">Descomposición: por capa técnica</div>
+        <svg viewBox="0 0 520 118" width="520" height="118" style="margin-top:8px">
+          <g font-size="24" font-weight="700" fill="#fff" text-anchor="middle">
+            <rect x="0" y="0" width="270" height="34" rx="4" fill="#8C8C8C"/><text x="135" y="25">Controladoras</text>
+            <rect x="0" y="42" width="270" height="34" rx="4" fill="#8C8C8C"/><text x="135" y="67">Servicios</text>
+            <rect x="0" y="84" width="270" height="34" rx="4" fill="#8C8C8C"/><text x="135" y="109">Modelos</text>
+          </g>
+          <line x1="292" y1="6" x2="292" y2="112" stroke="#901B23" stroke-width="2.6" marker-end="url(#ah)" marker-start="url(#ah)"/>
+          <g font-size="24" fill="#1E1E1E"><text x="310" y="52">un proceso cruza</text><text x="310" y="82">las tres capas</text></g>
+        </svg>
+      </div>
+      <div class="card out" style="padding:12px 18px">
+        <div class="lbl">Cohesión</div>
+        <div style="display:flex;gap:14px;align-items:baseline;margin-top:8px"><span class="mid" style="font-size:44px">34.78 %</span><span class="sm">de clases cohesionadas: 88 de 253</span></div>
+        <div class="track" style="margin-top:14px"><i style="width:34.78%"></i></div>
+      </div>
+      <div class="card out" style="padding:12px 18px">
+        <div class="lbl">Acoplamiento</div>
+        <div style="display:flex;gap:16px;align-items:center;margin-top:8px"><span class="mid" style="font-size:44px">22</span><span class="sm">clases sobre el rango de CBO;<br><b>17 son controladoras</b></span></div>
+      </div>
+      <div class="card out" style="padding:12px 18px">
+        <div class="lbl">Ciclicidad: 3 ciclos de dependencia</div>
+        <svg viewBox="0 0 520 88" width="520" height="88" style="margin-top:8px">
+          <g font-size="24" text-anchor="middle">
+            <rect x="1" y="2" width="192" height="38" rx="5" fill="#EDEDED" stroke="#8C8C8C"/><text x="97" y="29">Tareas en cola</text>
+            <rect x="262" y="2" width="118" height="38" rx="5" fill="#EDEDED" stroke="#8C8C8C"/><text x="321" y="29">Servicios</text>
+            <rect x="1" y="48" width="192" height="38" rx="5" fill="#EDEDED" stroke="#8C8C8C"/><text x="97" y="75">Servicio de datos</text>
+            <rect x="262" y="48" width="118" height="38" rx="5" fill="#EDEDED" stroke="#8C8C8C"/><text x="321" y="75">Hook</text>
+          </g>
+          <g stroke="#901B23" stroke-width="2.6" fill="none" marker-end="url(#ah)" marker-start="url(#ah)"><line x1="202" y1="21" x2="253" y2="21"/><line x1="202" y1="67" x2="253" y2="67"/></g>
+          <g font-size="24"><text x="394" y="29">backend</text><text x="394" y="75">frontend, ×2</text></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: PHPMetrics y dependency-cruiser sobre GENDocs V2. Clase cohesionada: un solo componente de LCOM. Rango de CBO: menos de cinco vecinos.</div>
+</section>
+
+<!-- ============================================================ 13 CALIFICACIÓN DE V2 -->
+<section class="slide std" data-sec="oe1">
+  <div class="main">
+    <div class="kicker">Objetivo específico 1 · Mantenibilidad de V2</div>
+    <h2 class="t">En la escala del estudio, V2 calificó B, B, A, B, C y A</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:26px;align-items:center">
+      <div class="col" style="width:668px;gap:9px">
+        <div class="sc"><span class="letter L-B">B</span><b style="width:252px;flex:none">Modularidad</b><span class="mut">cohesión: LCOM medio 2.93</span></div>
+        <div class="sc"><span class="letter L-B">B</span><b style="width:252px;flex:none">Reusabilidad</b><span class="mut">duplicación del frontend</span></div>
+        <div class="sc"><span class="letter L-A">A</span><b style="width:252px;flex:none">Analizabilidad</b><span class="mut">sin indicadores fuera de rango</span></div>
+        <div class="sc"><span class="letter L-B">B</span><b style="width:252px;flex:none">Modificabilidad</b><span class="mut">duplicación del frontend</span></div>
+        <div class="sc"><span class="letter L-C">C</span><b style="width:252px;flex:none">Testeabilidad</b><span class="mut">sin pruebas en ninguna capa</span></div>
+        <div class="sc"><span class="letter L-A">A</span><b style="width:252px;flex:none">Mantenibilidad global</b><span class="mut">sin indicadores fuera de rango</span></div>
+        <div class="card soft sm" style="margin-top:10px;padding:10px 16px"><b>A:</b> ningún indicador fuera de rango · <b>B:</b> uno · <b>C:</b> dos o más</div>
+      </div>
+      <div class="card red f1" style="padding:16px 20px">
+        <div class="lbl">Duplicación en el frontend</div>
+        <div class="big" style="font-size:66px;margin-top:6px">19.64 %</div>
+        <div class="sm" style="margin-top:6px">de las líneas, casi el cuádruple del rango de 5 %</div>
+        <div class="track" style="margin-top:16px"><i style="width:78.56%"></i><u style="left:20%"></u></div>
+        <div class="ax" style="font-size:20px;position:relative;height:24px;margin-top:8px;color:rgba(255,255,255,.9)"><span style="position:absolute;left:0">0 %</span><span style="position:absolute;left:20%;transform:translateX(-50%);font-weight:700">5 %</span><span style="position:absolute;right:0">25 %</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: SonarQube y PHPMetrics sobre GENDocs V2; escala del estudio, que aplica los rangos de referencia de cada métrica.</div>
+</section>
+
+<!-- ============================================================ 14 DIVISOR OE2 -->
+<section class="slide div">
+  <div class="bar"></div>
+  <div class="eyebrow">OBJETIVO ESPECÍFICO 2</div>
+  <h2>Implementar un sistema web con arquitectura modular</h2>
+  <p>Configuración dinámica de módulos, organización automatizada de archivos en la nube y control de acceso granular.</p>
+  <div class="bignum">02</div>
+</section>
+
+<!-- ============================================================ 15 EL SISTEMA EN PANTALLA -->
+<section class="slide hero">
+  <div class="hk">Objetivo específico 2 · El sistema desarrollado</div>
+  <h2 class="ht">GENDocs V3 en pantalla: los reportes del administrador</h2>
+  <div class="hshot an z"><img src="img/sistema-reportes.png" alt="Pantalla de reportes de GENDocs V3 con el menú de módulos y dos gráficas de documentos generados"></div>
+  <div class="hc">Documentos generados por módulo y por usuario. El menú lateral sale de los módulos registrados en la base de datos. Datos ficticios.</div>
+</section>
+
+<!-- ============================================================ 15 METODOLOGÍA DE DESARROLLO -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Metodología de desarrollo</div>
+    <h2 class="t">XP se adoptó porque sus prácticas actúan sobre el código que se mide</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:30px;align-items:center">
+      <div style="width:500px">
+        <div class="lbl" style="margin-bottom:8px">Matriz ponderada, sobre 100</div>
+        <svg viewBox="0 0 500 196" width="500" height="196">
+          <g font-size="26">
+            <text x="0" y="36">Scrum</text><rect x="104" y="6" width="191" height="44" fill="#8C8C8C"/><text x="305" y="37">51.6</text>
+            <text x="0" y="106">Kanban</text><rect x="104" y="76" width="257" height="44" fill="#8C8C8C"/><text x="371" y="107">69.4</text>
+            <text x="0" y="176" font-weight="700" fill="#901B23">XP</text><rect x="104" y="146" width="320" height="44" fill="#901B23"/><text x="434" y="177" font-weight="700" fill="#901B23">86.4</text>
+          </g>
+        </svg>
+      </div>
+      <div class="f1">
+        <div class="card soft" style="padding:14px 20px">
+          <div class="lbl">Criterio decisivo, con peso de 22 %</div>
+          <div class="txt" style="margin-top:4px"><b>Prácticas de ingeniería sobre el código</b></div>
+          <div class="sm" style="margin-top:4px">Scrum 1 · Kanban 1 · <b class="g">XP 5</b></div>
+        </div>
+        <div class="lbl" style="margin:16px 0 8px">Prácticas adoptadas</div>
+        <div><span class="chip">Integración continua</span><span class="chip">1,407 pruebas en el backend</span><span class="chip">Refactorización guiada por métricas</span><span class="chip">Validación por iteración</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: [61] Saleh, 2019, para los criterios de selección del marco de desarrollo.</div>
+</section>
+
+<!-- ============================================================ 16 ITERACIONES -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Planificación por iteraciones</div>
+    <h2 class="t">Una semana de diseño y seis iteraciones, de julio a octubre de 2026</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:16px;justify-content:center">
+      <svg viewBox="0 0 1136 338" width="1136" height="338">
+        <g stroke="#E6DDD8" stroke-width="1.5"><line x1="486" y1="0" x2="486" y2="310"/><line x1="536" y1="0" x2="536" y2="310"/><line x1="746" y1="0" x2="746" y2="310"/><line x1="966" y1="0" x2="966" y2="310"/><line x1="1135" y1="0" x2="1135" y2="310"/><line x1="486" y1="310" x2="1135" y2="310" stroke="#bbb"/></g>
+        <g class="ax" font-size="20" fill="#5E5E5E" text-anchor="middle"><text x="511" y="332">jul.</text><text x="641" y="332">agosto</text><text x="856" y="332">septiembre</text><text x="1050" y="332">octubre</text></g>
+        <g font-size="24" font-weight="700" fill="#901B23">
+          <text x="0" y="30" style="font-family:Menlo,Consolas,monospace">I0</text><text x="0" y="74" style="font-family:Menlo,Consolas,monospace">I1</text><text x="0" y="118" style="font-family:Menlo,Consolas,monospace">I2</text><text x="0" y="162" style="font-family:Menlo,Consolas,monospace">I3</text><text x="0" y="206" style="font-family:Menlo,Consolas,monospace">I4</text><text x="0" y="250" style="font-family:Menlo,Consolas,monospace">I5</text><text x="0" y="294" style="font-family:Menlo,Consolas,monospace">I6</text>
+        </g>
+        <g font-size="24">
+          <text x="46" y="30">Diseño de la arquitectura por capas</text>
+          <text x="46" y="74">A. Núcleo de configuración dinámica</text>
+          <text x="46" y="118">B. Operación documental, M5 a M7</text>
+          <text x="46" y="162">B. Operación documental, M8 a M10</text>
+          <text x="46" y="206">C. Seguridad y trazabilidad</text>
+          <text x="46" y="250">D. Integración con servicios externos</text>
+          <text x="46" y="294">Refactorización por métricas y evaluación</text>
+        </g>
+        <rect x="488" y="8" width="46" height="30" rx="3" fill="#C9767C"/>
+        <rect x="538" y="52" width="146" height="30" rx="3" fill="#901B23"/>
+        <rect x="688" y="96" width="146" height="30" rx="3" fill="#901B23"/>
+        <rect x="838" y="140" width="96" height="30" rx="3" fill="#901B23"/>
+        <rect x="938" y="184" width="96" height="30" rx="3" fill="#901B23"/>
+        <rect x="1038" y="228" width="46" height="30" rx="3" fill="#901B23"/>
+        <rect x="1088" y="272" width="46" height="30" rx="3" fill="#C9767C"/>
+        <g font-size="24" fill="#1E1E1E">
+          <text x="544" y="31">27 al 31 de julio</text>
+          <text x="694" y="75">3 al 21 de agosto</text>
+          <text x="844" y="119">24 ago. al 11 sep.</text>
+          <text x="944" y="163">14 al 25 sep.</text>
+          <text x="930" y="207" text-anchor="end">28 sep. al 9 oct.</text>
+          <text x="1030" y="251" text-anchor="end">12 al 16 de octubre</text>
+          <text x="1080" y="295" text-anchor="end">19 al 23 de octubre</text>
+        </g>
+      </svg>
+      <div class="card soft sm" style="padding:10px 18px">Cada iteración cerró con <b>90 % o más</b> de los requisitos de su bloque, validados por la Secretaría de Facultad.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 17 REQUISITOS -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Requisitos del sistema</div>
+    <h2 class="t">Veinte requisitos funcionales, trazados a la entrevista y al cuestionario</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:20px;justify-content:center">
+      <div class="row" style="gap:12px">
+        <div class="card red f1 icl" style="padding:10px 14px"><div class="big" style="font-size:44px">20</div><div class="sm">requisitos funcionales</div></div>
+        <div class="card f1 icl" style="padding:10px 14px"><div class="big" style="font-size:44px">14</div><div class="sm">no funcionales</div></div>
+        <div class="card f1 icl" style="padding:10px 14px"><div class="big" style="font-size:44px">16</div><div class="sm">módulos funcionales</div></div>
+        <div class="card f1 icl" style="padding:10px 14px"><div class="big" style="font-size:44px">11</div><div class="sm">casos de uso</div></div>
+        <div class="card f1 icl" style="padding:10px 14px"><div class="big" style="font-size:44px">20</div><div class="sm">historias de usuario</div></div>
+      </div>
+      <div class="row" style="gap:12px">
+        <div class="card out topline f1" style="padding:10px 14px"><div class="icl"><span class="letter L-A">A</span><b class="sm">Configuración dinámica</b></div><div class="sm" style="margin-top:6px"><b class="g">5 requisitos</b> · I1</div></div>
+        <div class="card out topline f1" style="padding:10px 14px"><div class="icl"><span class="letter L-A">B</span><b class="sm">Operación documental</b></div><div class="sm" style="margin-top:6px"><b class="g">8 requisitos</b> · I2 e I3</div></div>
+        <div class="card out topline f1" style="padding:10px 14px"><div class="icl"><span class="letter L-A">C</span><b class="sm">Seguridad y trazabilidad</b></div><div class="sm" style="margin-top:6px"><b class="g">4 requisitos</b> · I4</div></div>
+        <div class="card out topline f1" style="padding:10px 14px"><div class="icl"><span class="letter L-A">D</span><b class="sm">Servicios externos</b></div><div class="sm" style="margin-top:6px"><b class="g">3 requisitos</b> · I5</div></div>
+      </div>
+      <div>
+        <div class="lbl" style="margin-bottom:6px">Ejemplo de trazabilidad</div>
+        <div class="row sm" style="gap:0;align-items:stretch">
+          <div class="card soft" style="width:236px;padding:8px 10px"><b>Entrevista</b> E2.1 y E2.3<br><b>Cuestionario</b> I2.1, media 4.78</div>
+          <div class="arrow" style="font-size:26px;width:24px">→</div>
+          <div class="card red" style="width:262px;padding:8px 12px"><b>RF-01</b><br>módulos y submódulos definidos en datos</div>
+          <div class="arrow" style="font-size:26px;width:24px">→</div>
+          <div class="card" style="width:108px;padding:8px 12px"><b>Módulo</b><br>M1</div>
+          <div class="arrow" style="font-size:26px;width:24px">→</div>
+          <div class="card" style="width:160px;padding:8px 12px"><b>Historia</b><br><span style="white-space:nowrap">HU-01</span><br>prioridad alta</div>
+          <div class="arrow" style="font-size:26px;width:24px">→</div>
+          <div class="card" style="width:122px;padding:8px 12px"><b>Iteración</b><br>I1</div>
+          <div class="arrow" style="font-size:26px;width:24px">→</div>
+          <div class="card f1" style="padding:8px 12px"><b>Evidencia</b><br>Anexo D</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 18 ARQUITECTURA -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Arquitectura de software</div>
+    <h2 class="t">Monolito modular de cuatro capas, con módulos de frontera explícita</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:14px;justify-content:center">
+      <div class="layer" style="padding:14px 12px 14px 0"><div class="ln">Presentación</div>
+        <div class="lb" style="width:336px"><svg class="ic g"><use href="#i-users"/></svg><div>Navegadores del personal</div></div>
+        <div class="arrow" style="font-size:28px">→</div>
+        <div class="lb f1"><svg class="bi"><use href="#b-nextdotjs"/></svg><svg class="bi" style="fill:#61DAFB"><use href="#b-react"/></svg><div><b>Aplicación web Next.js</b>, con React y MUI</div></div>
+      </div>
+      <div class="layer" style="padding:14px 12px 14px 0"><div class="ln">Lógica de negocio</div>
+        <div class="f1 col" style="gap:8px">
+          <div class="sm icl" style="gap:10px"><svg class="bi" style="fill:#E0234E"><use href="#b-nestjs"/></svg><div><b>API REST NestJS:</b> un módulo de código por funcionalidad</div></div>
+          <div class="row" style="gap:8px">
+            <div class="lb f1 blk"><b>A</b> Configuración</div>
+            <div class="lb f1 blk"><b>B</b> Operación</div>
+            <div class="lb f1 blk"><b>C</b> Seguridad</div>
+            <div class="lb f1 blk"><b>D</b> Integración</div>
+          </div>
+          <div class="row" style="gap:8px">
+            <div class="lb f1"><svg class="bi"><use href="#b-socketdotio"/></svg>Socket.IO: notificaciones</div>
+            <div class="lb f1"><svg class="ic g"><use href="#i-layers"/></svg>Colas Bull: generación asíncrona</div>
+          </div>
+        </div>
+      </div>
+      <div class="layer" style="padding:14px 12px 14px 0"><div class="ln">Datos</div>
+        <div class="lb f1"><svg class="bi" style="fill:#4169E1"><use href="#b-postgresql"/></svg><div><b>PostgreSQL</b> con TypeORM <span class="mut">· dominio y auditoría</span></div></div>
+        <div class="lb" style="width:336px"><svg class="bi" style="fill:#FF4438"><use href="#b-redis"/></svg><div><b>Redis</b> <span class="mut">· colas</span></div></div>
+      </div>
+      <div class="layer" style="padding:14px 12px 14px 0"><div class="ln">Servicios externos</div>
+        <div class="lb f1"><svg class="bi" style="fill:#4285F4"><use href="#b-googledrive"/></svg><svg class="bi" style="fill:#4285F4"><use href="#b-googledocs"/></svg><svg class="bi" style="fill:#34A853"><use href="#b-googlesheets"/></svg><div><b>API de Google:</b> Drive, Docs y Sheets</div></div>
+        <div class="lb" style="width:336px"><svg class="ic g"><use href="#i-mail"/></svg><div><b>Servidor SMTP</b> <span class="mut">· correo</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: [16] Su, 2024: el monolito modular conserva una sola unidad de despliegue y separa el código en módulos con fronteras explícitas.</div>
+</section>
+
+<!-- ============================================================ 19 ESTRUCTURA V2 FRENTE A V3 -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Grado de modularidad</div>
+    <h2 class="t">La unidad de código pasa de la capa técnica al módulo funcional</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:0;align-items:center">
+      <div class="card out f1" style="border-top:5px solid var(--v2);padding:14px 18px 16px">
+        <div class="lbl">GENDocs V2: paquetes por capa técnica</div>
+        <svg viewBox="0 0 510 232" width="510" height="232" style="margin-top:6px">
+          <rect x="0" y="38" width="330" height="52" rx="5" fill="#8C8C8C"/>
+          <rect x="0" y="100" width="330" height="52" rx="5" fill="#8C8C8C"/>
+          <rect x="0" y="162" width="330" height="52" rx="5" fill="#8C8C8C"/>
+          <g font-size="24" font-weight="700" fill="#fff"><text x="16" y="72">Controladoras</text><text x="16" y="134">Servicios</text><text x="16" y="196">Modelos</text></g>
+          <rect x="196" y="30" width="126" height="192" rx="7" fill="rgba(255,255,255,.3)" stroke="#fff" stroke-width="3"/>
+          <rect x="196" y="30" width="126" height="192" rx="7" fill="none" stroke="#1E1E1E" stroke-width="1.8" stroke-dasharray="7 5"/>
+          <text x="259" y="22" font-size="24" font-style="italic" text-anchor="middle" fill="#1E1E1E">un proceso</text>
+          <rect x="388" y="96" width="120" height="60" rx="5" fill="#EDEDED" stroke="#8C8C8C" stroke-width="1.5"/>
+          <g font-size="24" text-anchor="middle"><text x="448" y="121">Tareas</text><text x="448" y="147">en cola</text></g>
+          <g stroke="#901B23" stroke-width="2.6" fill="none" marker-end="url(#ah)"><line x1="335" y1="116" x2="383" y2="116"/><line x1="383" y1="138" x2="335" y2="138"/></g>
+          <text x="448" y="190" font-size="24" font-weight="700" fill="#901B23" text-anchor="middle">1 ciclo</text>
+        </svg>
+        <div class="sm" style="margin-top:6px">Un proceso nuevo toca las tres capas <b>a la vez</b>.</div>
+      </div>
+      <div class="arrow" style="width:44px">→</div>
+      <div class="card out f1" style="border-top:5px solid var(--g);padding:14px 18px 16px">
+        <div class="lbl" style="color:var(--g)">GENDocs V3: paquetes por módulo funcional</div>
+        <svg viewBox="0 0 510 232" width="510" height="232" style="margin-top:6px">
+          <g fill="#F6E9EA" stroke="#901B23" stroke-width="2"><rect x="1" y="1" width="158" height="142" rx="6"/><rect x="176" y="1" width="158" height="142" rx="6"/></g>
+          <rect x="351" y="1" width="158" height="142" rx="6" fill="#fff" stroke="#901B23" stroke-width="2" stroke-dasharray="7 5"/>
+          <g font-size="24" font-weight="700" fill="#901B23" text-anchor="middle"><text x="80" y="27">consejos</text><text x="255" y="27">actas</text><text x="430" y="27">más módulos</text></g>
+          <g fill="#fff" stroke="#E9CDD0" stroke-width="1.5">
+            <rect x="11" y="38" width="138" height="30" rx="4"/><rect x="11" y="72" width="138" height="30" rx="4"/><rect x="11" y="106" width="138" height="30" rx="4"/>
+            <rect x="186" y="38" width="138" height="30" rx="4"/><rect x="186" y="72" width="138" height="30" rx="4"/><rect x="186" y="106" width="138" height="30" rx="4"/>
+          </g>
+          <g fill="none" stroke="#E9CDD0" stroke-width="1.5" stroke-dasharray="5 4"><rect x="361" y="38" width="138" height="30" rx="4"/><rect x="361" y="72" width="138" height="30" rx="4"/><rect x="361" y="106" width="138" height="30" rx="4"/></g>
+          <g font-size="24" text-anchor="middle" fill="#1E1E1E">
+            <text x="80" y="61">controlador</text><text x="80" y="95">servicio</text><text x="80" y="129">DTO</text>
+            <text x="255" y="61">controlador</text><text x="255" y="95">servicio</text><text x="255" y="129">DTO</text>
+          </g>
+          <g stroke="#901B23" stroke-width="2.6" fill="none" marker-end="url(#ah)"><line x1="80" y1="145" x2="80" y2="166"/><line x1="255" y1="145" x2="255" y2="166"/><line x1="430" y1="145" x2="430" y2="166"/></g>
+          <rect x="1" y="170" width="508" height="61" rx="6" fill="#901B23"/>
+          <g stroke="#fff" stroke-width="1.5" opacity=".6"><line x1="168" y1="180" x2="168" y2="221"/><line x1="312" y1="180" x2="312" y2="221"/></g>
+          <g font-size="24" font-weight="700" fill="#fff" text-anchor="middle"><text x="85" y="208">persistencia</text><text x="240" y="208">seguridad</text><text x="411" y="196">utilidades</text><text x="411" y="222">compartidas</text></g>
+        </svg>
+        <div class="sm" style="margin-top:6px">Cada módulo es un paquete con <b>frontera declarada</b>.</div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: PHPMetrics sobre el backend de GENDocs V2 (un ciclo entre tareas en cola y servicios); arquitectura de GENDocs V3, con dependencias en un solo sentido hacia tres paquetes transversales.</div>
+</section>
+
+<!-- ============================================================ 20 CONFIGURACIÓN DINÁMICA -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Configuración dinámica de módulos</div>
+    <h2 class="t">Un proceso nuevo se registra en datos, sin cambiar el código</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:0;align-items:center">
+      <div class="col" style="width:336px;gap:12px">
+        <div class="lbl">En la interfaz</div>
+        <div class="card red" style="padding:14px 18px"><div class="sm"><b>Registrar carrera</b></div><div class="sm" style="margin-top:4px">crea su módulo, cuatro submódulos, carpetas y plantillas</div></div>
+        <div class="card soft" style="padding:14px 18px"><div class="sm"><b>Iniciar año</b></div><div class="nt" style="margin-top:4px">cinco verificaciones; conserva el historial</div></div>
+      </div>
+      <div class="arrow" style="width:44px">→</div>
+      <div class="col" style="width:306px;gap:10px">
+        <div class="lbl">En la base de datos</div>
+        <div class="card out mono g" style="padding:8px 14px">modules</div>
+        <div class="card out mono g" style="padding:8px 14px">submodules_modules</div>
+        <div class="card out mono g" style="padding:8px 14px">careers</div>
+        <div class="card out mono g" style="padding:8px 14px">year_module</div>
+      </div>
+      <div class="arrow" style="width:44px">→</div>
+      <div class="col f1" style="gap:8px">
+        <div class="lbl">Se deriva sin cambiar el código</div>
+        <div class="card sm" style="padding:8px 14px"><b>Menú lateral</b></div>
+        <div class="card sm" style="padding:8px 14px"><b>Ruta dinámica</b></div>
+        <div class="card sm" style="padding:8px 14px"><b>Vista:</b> una de catorce existentes</div>
+        <div class="card sm" style="padding:8px 14px"><b>Carpetas en la nube</b></div>
+        <div class="card sm" style="padding:8px 14px"><b>Numeración anual</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">GENDocs V2 definía la estructura de módulos en el código fuente [14] y su reinicio anual eliminaba registros.</div>
+</section>
+
+<!-- ============================================================ 21 NUBE -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Organización automatizada en la nube</div>
+    <h2 class="t">Las carpetas en la nube se crean solas por módulo, año y submódulo</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:20px;align-items:center">
+      <div class="f1">
+        <ul class="tree">
+          <li><span class="node root"><svg class="ic"><use href="#i-cloud"/></svg>Carpeta raíz</span>
+            <ul><li><span class="node"><svg class="ic g"><use href="#i-folder"/></svg>Carpeta del módulo</span> <span class="mut">carrera, consejo o Secretaría de Facultad</span>
+              <ul>
+                <li><span class="node"><svg class="ic g"><use href="#i-folder"/></svg>Procesos</span> → <span class="node"><svg class="ic g"><use href="#i-folder"/></svg>Carpeta del proceso</span> → <span class="node f"><svg class="ic"><use href="#i-file"/></svg>Plantillas</span></li>
+                <li><span class="node hl"><svg class="ic"><use href="#i-folder"/></svg>Año vigente</span>
+                  <ul>
+                    <li><span class="node"><svg class="ic g"><use href="#i-folder"/></svg>Consejos</span> → <span class="node"><svg class="ic g"><use href="#i-folder"/></svg>Carpeta del consejo</span> → <span class="node f"><svg class="ic"><use href="#i-file"/></svg>Documentos</span></li>
+                    <li><span class="node"><svg class="ic g"><use href="#i-folder"/></svg>Actas de grado</span> → <span class="node f"><svg class="ic"><use href="#i-file"/></svg>Hojas de calificaciones</span></li>
+                    <li><span class="node"><svg class="ic g"><use href="#i-folder"/></svg>Certificaciones</span> → <span class="node f"><svg class="ic"><use href="#i-award"/></svg>Certificaciones emitidas</span></li>
+                  </ul>
+                </li>
+                <li><span class="node"><svg class="ic g"><use href="#i-archive"/></svg>Años anteriores</span> <span class="mut">intactos tras el reinicio anual</span></li>
+              </ul>
+            </li></ul>
+          </li>
+        </ul>
+      </div>
+      <div class="col" style="width:290px;gap:14px">
+        <div class="card red"><svg class="ic lg"><use href="#i-key"/></svg><div class="sm" style="margin-top:6px">Cuenta de servicio a cargo de la Secretaría de Facultad</div></div>
+        <div class="card"><div class="sm">Carpeta de pruebas separada de la de operación</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Origen: entrevista, E1.2 (pérdida de acceso por cuentas personales) y E2.4; cuestionario, I2.2 (media 4.56).</div>
+</section>
+
+<!-- ============================================================ 22 ACCESO -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · Control de acceso granular</div>
+    <h2 class="t">El acceso se concede por rol, módulo, submódulo y carrera</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:24px;align-items:center">
+      <div class="col f1" style="gap:6px">
+        <div class="row" style="gap:10px;align-items:stretch">
+          <div class="card f1" style="padding:8px 14px"><div class="sm"><b>Rol</b></div><div class="nt">cinco roles</div></div>
+          <div class="card" style="width:262px;padding:8px 14px"><div class="sm"><b>Módulo y submódulo</b></div><div class="nt">pares concedidos</div></div>
+          <div class="card f1" style="padding:8px 14px"><div class="sm"><b>Carrera</b></div><div class="nt">en actas de grado</div></div>
+        </div>
+        <div style="text-align:center;color:var(--g);font-size:26px;line-height:1">↓</div>
+        <div class="card red icl" style="padding:10px 16px"><svg class="ic lg"><use href="#i-key"/></svg><div class="sm">Al iniciar sesión, el servidor firma un token con el rol, los pares y las carreras</div></div>
+        <div style="text-align:center;color:var(--g);font-size:26px;line-height:1">↓</div>
+        <div class="row" style="gap:8px;align-items:stretch">
+          <div class="guard f1"><div>¿Token válido?</div><span class="deny">401</span></div>
+          <div class="guard f1"><div>¿Rol permitido?</div><span class="deny">403</span></div>
+          <div class="guard f1"><div>¿Submódulo concedido?</div><span class="deny">403</span></div>
+          <div class="guard f1 ok"><svg class="ic"><use href="#i-check"/></svg><div>Petición atendida</div></div>
+        </div>
+        <div class="nt" style="margin-top:6px">Un cambio de permiso se aplica de inmediato a la sesión abierta.</div>
+      </div>
+      <div style="width:440px">
+        <div class="shot" style="width:440px"><video src="video/op-accesos.mp4" poster="video/op-accesos.jpg" muted loop playsinline preload="auto" style="width:100%" aria-label="Clip: el administrador marca módulos y submódulos en el árbol de accesos de un usuario"></video></div>
+        <div class="nt" style="margin-top:8px">Árbol de accesos de un usuario</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 23 EL SISTEMA EN OPERACIÓN, 1 DE 2 -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · El sistema en operación (1 de 2)</div>
+    <h2 class="t">La secretaria elige cuatro datos y el sistema hace el resto</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:26px">
+      <div style="width:570px">
+        <div class="shot" style="width:570px"><video src="video/op-generar.mp4" poster="video/op-generar.jpg" muted loop playsinline preload="auto" style="width:100%" aria-label="Clip: la secretaria llena el formulario, pulsa Crear y el documento aparece en el listado con su número"></video></div>
+        <div class="sm" style="margin-top:8px">Consejo, proceso, plantilla y estudiante. El número lo propone el sistema.</div>
+      </div>
+      <div class="col f1" style="gap:10px">
+        <div class="lbl">Al pulsar Crear</div>
+        <div class="step an a1"><b>1</b><div><strong>Asigna el número:</strong> nuevo, reservado o encolado</div></div>
+        <div class="step an a2"><b>2</b><div><strong>Copia la plantilla</strong> a la carpeta del consejo</div></div>
+        <div class="step an a3"><b>3</b><div><strong>Reemplaza las variables</strong> con los datos</div></div>
+        <div class="step an a4"><b>4</b><div><strong>Queda generado</strong> y se notifica al estudiante</div></div>
+        <div class="shot an a5" style="width:400px;margin-left:46px;margin-top:4px"><img src="img/op-notificar.png" alt="Diálogo para notificar el documento al estudiante por correo o WhatsApp" style="width:100%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Capturas del sistema con datos ficticios. La generación corre en cola, con hasta cinco intentos.</div>
+</section>
+
+<!-- ============================================================ 24 EL SISTEMA EN OPERACIÓN, 2 DE 2 -->
+<section class="slide std" data-sec="oe2">
+  <div class="main">
+    <div class="kicker">Objetivo específico 2 · El sistema en operación (2 de 2)</div>
+    <h2 class="t">La plantilla se convierte en documento, con su número y sus datos</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:10px">
+      <div class="row" style="gap:0;align-items:flex-start">
+        <div style="width:540px" class="an">
+          <div class="sm" style="margin-bottom:6px"><b>Plantilla del proceso</b> <span class="mut">· con variables</span></div>
+          <div class="shot" style="width:540px"><img src="img/op-plantilla.png" alt="Plantilla de resolución con las variables entre llaves resaltadas" style="width:100%"></div>
+        </div>
+        <div class="arrow an a2" style="width:56px;align-self:center">→</div>
+        <div style="width:540px" class="an a3">
+          <div class="sm" style="margin-bottom:6px"><b class="g">Documento generado</b> <span class="mut">· N.º 0014</span></div>
+          <div class="shot" style="width:540px;border-color:var(--g)"><img src="img/op-documento.png" alt="Resolución generada con la fecha, el número y los datos del estudiante resaltados" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="row an a4" style="gap:12px">
+        <div class="card f1" style="padding:8px 14px"><div class="lbl">Del consejo</div><div class="sm">fecha y tipo de sesión</div></div>
+        <div class="card f1" style="padding:8px 14px"><div class="lbl">De la numeración</div><div class="sm">número secuencial del año</div></div>
+        <div class="card" style="padding:8px 14px;flex:1.5"><div class="lbl">De los registros</div><div class="sm">estudiante, cédula, carrera y coordinador</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Resolución generada por el sistema con datos ficticios. Los recuadros marcan cada variable de la plantilla y el valor que la reemplazó.</div>
+</section>
+
+<!-- ============================================================ 24 DIVISOR OE3 -->
+<section class="slide div">
+  <div class="bar"></div>
+  <div class="eyebrow">OBJETIVO ESPECÍFICO 3</div>
+  <h2>Evaluar la incidencia del grado de modularidad sobre la mantenibilidad</h2>
+  <p>Análisis estático de código y verificación del cumplimiento de los requisitos funcionales, según ISO/IEC 25010.</p>
+  <div class="bignum">03</div>
+</section>
+
+<!-- ============================================================ 25 CONDICIONES -->
+<section class="slide std" data-sec="oe3">
+  <div class="main">
+    <div class="kicker">Objetivo específico 3 · Condiciones de la evaluación</div>
+    <h2 class="t">Mismas métricas y herramientas, con cifras normalizadas por tamaño</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:26px;align-items:center">
+      <div style="width:580px">
+        <div class="legend" style="margin-bottom:8px"><span><i class="sw" style="background:#8C8C8C"></i>GENDocs V2</span><span><i class="sw" style="background:#901B23"></i>GENDocs V3</span></div>
+        <svg viewBox="0 0 580 292" width="580" height="292">
+          <g font-size="24">
+            <text x="0" y="22">Líneas de código, backend</text>
+            <rect x="0" y="32" width="98" height="26" fill="#8C8C8C"/><text x="106" y="53">9,827</text>
+            <rect x="0" y="62" width="321" height="26" fill="#901B23"/><text x="329" y="83" font-weight="700">32,074 · 3.3 veces</text>
+            <text x="0" y="122">Líneas de código, frontend</text>
+            <rect x="0" y="132" width="214" height="26" fill="#8C8C8C"/><text x="222" y="153">21,435</text>
+            <rect x="0" y="162" width="362" height="26" fill="#901B23"/><text x="370" y="183" font-weight="700">36,190 · 1.7 veces</text>
+            <text x="0" y="222">Rutas HTTP de negocio</text>
+            <rect x="0" y="232" width="141" height="26" fill="#8C8C8C"/><text x="149" y="253">88</text>
+            <rect x="0" y="262" width="352" height="26" fill="#901B23"/><text x="360" y="283" font-weight="700">220 · 2.5 veces</text>
+          </g>
+        </svg>
+        <div class="lbl" style="margin:12px 0 6px">Unidades medidas, de V2 a V3</div>
+        <div><span class="chip gray" style="margin-bottom:0">253 → 435 clases</span><span class="chip gray" style="margin:0">276 → 534 módulos</span></div>
+      </div>
+      <div class="col f1" style="gap:10px">
+        <div class="lbl">Cómo se normalizó</div>
+        <div class="card red" style="padding:10px 18px"><div class="sm"><b>Ninguna cifra se compara en valor absoluto</b></div></div>
+        <div class="card" style="padding:10px 18px"><div class="nt">Complejidad y deuda técnica</div><div class="sm"><b>por millar de líneas de código</b></div><div class="nt">787 min de deuda ÷ 32.074 millares = 24.54</div></div>
+        <div class="card" style="padding:10px 18px"><div class="nt">Acoplamiento y cohesión</div><div class="sm"><b>por clase, paquete, módulo o carpeta</b></div></div>
+        <div class="card" style="padding:10px 18px"><div class="nt">Ciclos</div><div class="sm"><b>frente a los esperados en un grafo aleatorio de igual tamaño y densidad</b></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Medición con SonarQube, dependency-cruiser y el analizador CK, con las definiciones y versiones de la línea base. El ejemplo es la deuda técnica del backend de V3.</div>
+</section>
+
+<!-- ============================================================ 26 PERFIL DE MODULARIDAD -->
+<section class="slide std" data-sec="oe3">
+  <div class="main">
+    <div class="kicker">Objetivo específico 3 · Grado de modularidad</div>
+    <h2 class="t">La versión modular gana los cuatro componentes del perfil</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:16px;justify-content:center">
+      <div class="pr"><div class="pl">Criterio de descomposición</div>
+        <div class="pv" style="display:flex;align-items:center;gap:12px"><span class="chip gray" style="margin:0">Por capa técnica</span><span class="arrow" style="font-size:30px">→</span><span class="chip solid" style="margin:0">Por módulo funcional, con tres transversales</span></div></div>
+      <div class="pr"><div class="pl">Clases cohesionadas<div class="nt" style="font-weight:400">un solo componente de LCOM</div></div>
+        <div class="pv col" style="gap:6px">
+          <div class="bar2"><i style="width:34.78%;background:#8C8C8C"></i><span>34.78 % · 88 de 253</span></div>
+          <div class="bar2"><i style="width:95.86%;background:#901B23"></i><span class="in">95.86 % · 417 de 435</span></div>
+        </div></div>
+      <div class="pr"><div class="pl">Clases en el rango de CBO<div class="nt" style="font-weight:400">menos de cinco vecinos</div></div>
+        <div class="pv col" style="gap:6px">
+          <div class="bar2"><i style="width:91.30%;background:#8C8C8C"></i><span class="in">91.30 % · 231 de 253</span></div>
+          <div class="bar2"><i style="width:91.95%;background:#901B23"></i><span class="in">91.95 % · 400 de 435</span></div>
+        </div></div>
+      <div class="pr" style="border-bottom:none;padding-bottom:0"><div class="pl">Ciclos de dependencia</div>
+        <div class="pv" style="display:flex;align-items:center;gap:12px">
+          <div class="card" style="padding:10px 16px"><div class="sm"><b>3 ciclos:</b> 1 en backend y 2 en frontend</div></div>
+          <span class="arrow" style="font-size:30px">→</span>
+          <div class="card red" style="padding:10px 16px"><div class="sm"><b>0 ciclos</b> en las dos capas</div></div>
+        </div></div>
+      <div class="legend" style="margin-left:320px"><span><i class="sw" style="background:#8C8C8C"></i>GENDocs V2</span><span><i class="sw" style="background:#901B23"></i>GENDocs V3</span><span>LCOM medio: de 2.93 a 0.66</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 27 MANTENIBILIDAD -->
+<section class="slide std" data-sec="oe3">
+  <div class="main">
+    <div class="kicker">Objetivo específico 3 · Mantenibilidad</div>
+    <h2 class="t">27 de 37 comparaciones favorecen a la versión modular</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:28px;align-items:center">
+      <div style="width:700px">
+        <svg viewBox="0 0 700 48" width="700" height="48">
+          <rect x="0" y="0" width="432" height="48" fill="#901B23"/><text x="16" y="34" fill="#fff" font-size="27" font-weight="700">27 a favor de V3</text>
+          <rect x="432" y="0" width="96" height="48" fill="#8C8C8C"/><text x="480" y="34" fill="#fff" font-size="27" font-weight="700" text-anchor="middle">6</text>
+          <rect x="528" y="0" width="32" height="48" fill="#E0B4B7"/><rect x="560" y="0" width="16" height="48" fill="#D9D9D9"/><rect x="576.5" y="0.5" width="16" height="47" fill="#fff" stroke="#999"/>
+        </svg>
+        <div class="legend" style="margin-top:8px"><span><i class="sw" style="background:#901B23"></i>V3, 27</span><span><i class="sw" style="background:#8C8C8C"></i>V2, 6</span><span><i class="sw" style="background:#E0B4B7"></i>divididas, 2</span><span><i class="sw" style="background:#D9D9D9"></i>empate, 1</span><span style="margin-right:0"><i class="sw" style="background:#fff;border:1px solid #999"></i>sin veredicto, 1</span></div>
+        <div class="lbl" style="margin:14px 0 6px">Por sub-característica</div>
+        <svg viewBox="0 0 700 226" width="700" height="226">
+          <g font-size="24">
+            <text x="200" y="24" text-anchor="end">Modularidad</text>
+            <rect x="212" y="2" width="288" height="28" fill="#901B23"/><rect x="500" y="2" width="96" height="28" fill="#8C8C8C"/><rect x="596" y="2" width="24" height="28" fill="#E0B4B7"/><rect x="620" y="2" width="24" height="28" fill="#D9D9D9"/><text x="654" y="24">18</text>
+            <text x="200" y="62" text-anchor="end">Reusabilidad</text>
+            <rect x="212" y="40" width="96" height="28" fill="#901B23"/><rect x="308" y="40" width="24" height="28" fill="#8C8C8C"/><text x="342" y="62">5</text>
+            <text x="200" y="100" text-anchor="end">Analizabilidad</text>
+            <rect x="212" y="78" width="96" height="28" fill="#901B23"/><rect x="308" y="78" width="48" height="28" fill="#8C8C8C"/><rect x="356" y="78" width="24" height="28" fill="#E0B4B7"/><text x="390" y="100">7</text>
+            <text x="200" y="138" text-anchor="end">Modificabilidad</text>
+            <rect x="212" y="116" width="48" height="28" fill="#901B23"/><text x="270" y="138">2</text>
+            <text x="200" y="176" text-anchor="end">Testeabilidad</text>
+            <rect x="212" y="154" width="48" height="28" fill="#901B23"/><rect x="260" y="154" width="24" height="28" fill="#8C8C8C"/><rect x="284.5" y="154.5" width="23" height="27" fill="#fff" stroke="#999"/><text x="318" y="176">4</text>
+            <text x="200" y="214" text-anchor="end">Global</text>
+            <rect x="212" y="192" width="144" height="28" fill="#901B23"/><text x="366" y="214">6</text>
+          </g>
+        </svg>
+      </div>
+      <div class="col f1" style="gap:12px">
+        <div class="card red" style="padding:12px 18px"><div class="lbl">Deuda técnica</div><div class="mid" style="margin-top:4px;white-space:nowrap">135.66 → 44.66</div><div class="nt">min por millar; 3.0 veces menor</div></div>
+        <div class="card" style="padding:12px 18px"><div class="lbl">Duplicación de líneas</div><div class="mid" style="margin-top:4px;white-space:nowrap">11.81 % → 2.26 %</div><div class="nt">5.2 veces menor</div></div>
+        <div class="card" style="padding:12px 18px"><div class="lbl">Pruebas del backend</div><div class="mid" style="margin-top:4px;white-space:nowrap;font-size:30px">sin pruebas → 79.8 %</div><div class="nt">cobertura de líneas</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Un indicador asignado a dos sub-características cuenta en ambas; por eso las filas suman más de 37.</div>
+</section>
+
+<!-- ============================================================ 28 CALIFICACIÓN Y REQUISITOS -->
+<section class="slide std" data-sec="oe3">
+  <div class="main">
+    <div class="kicker">Objetivo específico 3 · Calificación y requisitos</div>
+    <h2 class="t">Cinco de seis calificaciones en A y los veinte requisitos cumplidos</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:16px;align-items:center">
+      <div style="width:592px">
+        <svg viewBox="-296 -200 592 404" width="592" height="404">
+          <g fill="none" stroke="#D8CFCA" stroke-width="1.2">
+            <polygon points="0,-46 39.8,-23 39.8,23 0,46 -39.8,23 -39.8,-23"/>
+            <polygon points="0,-92 79.7,-46 79.7,46 0,92 -79.7,46 -79.7,-46"/>
+            <polygon points="0,-138 119.5,-69 119.5,69 0,138 -119.5,69 -119.5,-69"/>
+            <line x1="0" y1="0" x2="0" y2="-138"/><line x1="0" y1="0" x2="119.5" y2="-69"/><line x1="0" y1="0" x2="119.5" y2="69"/>
+            <line x1="0" y1="0" x2="0" y2="138"/><line x1="0" y1="0" x2="-119.5" y2="69"/><line x1="0" y1="0" x2="-119.5" y2="-69"/>
+          </g>
+          <polygon points="0,-138 119.5,-69 119.5,69 0,138 -79.7,46 -119.5,-69" fill="#901B23" fill-opacity=".18" stroke="#901B23" stroke-width="3.5"/>
+          <polygon points="0,-92 79.7,-46 119.5,69 0,92 -39.8,23 -119.5,-69" fill="#8C8C8C" fill-opacity=".25" stroke="#6b6b6b" stroke-width="3" stroke-dasharray="8 6"/>
+          <g class="ax" font-size="20" font-weight="700" fill="#5E5E5E" text-anchor="end"><text x="-7" y="-39">C</text><text x="-7" y="-85">B</text><text x="-7" y="-124">A</text></g>
+          <g font-size="24">
+            <text x="0" y="-176" text-anchor="middle" font-weight="700">Modularidad</text><text x="0" y="-149" text-anchor="middle" fill="#5E5E5E">V2 B · V3 A</text>
+            <text x="132" y="-76" font-weight="700">Reusabilidad</text><text x="132" y="-49" fill="#5E5E5E">V2 B · V3 A</text>
+            <text x="132" y="64" font-weight="700">Analizabilidad</text><text x="132" y="91" fill="#5E5E5E">V2 A · V3 A</text>
+            <text x="0" y="167" text-anchor="middle" font-weight="700">Modificabilidad</text><text x="0" y="194" text-anchor="middle" fill="#5E5E5E">V2 B · V3 A</text>
+            <text x="-132" y="64" text-anchor="end" font-weight="700">Testeabilidad</text><text x="-132" y="91" text-anchor="end" fill="#5E5E5E">V2 C · V3 B</text>
+            <text x="-132" y="-103" text-anchor="end" font-weight="700">Mantenibilidad</text><text x="-132" y="-76" text-anchor="end" font-weight="700">global</text><text x="-132" y="-49" text-anchor="end" fill="#5E5E5E">V2 A · V3 A</text>
+          </g>
+        </svg>
+      </div>
+      <div class="f1">
+        <svg viewBox="0 0 520 248" width="520" height="248">
+          <g font-size="24">
+            <text x="0" y="36" font-weight="700">A. Configuración</text>
+            <text x="216" y="22" text-anchor="end" fill="#5E5E5E">V2</text><rect x="226" y="2" width="108" height="24" fill="#E0B4B7"/><rect x="334.5" y="2.5" width="71" height="23" fill="#fff" stroke="#999"/>
+            <text x="216" y="50" text-anchor="end" fill="#901B23">V3</text><rect x="226" y="30" width="180" height="24" fill="#901B23"/>
+            <text x="0" y="98" font-weight="700">B. Operación</text>
+            <text x="216" y="84" text-anchor="end" fill="#5E5E5E">V2</text><rect x="226" y="64" width="216" height="24" fill="#E0B4B7"/><rect x="442.5" y="64.5" width="71" height="23" fill="#fff" stroke="#999"/>
+            <text x="216" y="112" text-anchor="end" fill="#901B23">V3</text><rect x="226" y="92" width="288" height="24" fill="#901B23"/>
+            <text x="0" y="160" font-weight="700">C. Seguridad</text>
+            <text x="216" y="146" text-anchor="end" fill="#5E5E5E">V2</text><rect x="226" y="126" width="36" height="24" fill="#901B23"/><rect x="262" y="126" width="72" height="24" fill="#E0B4B7"/><rect x="334.5" y="126.5" width="35" height="23" fill="#fff" stroke="#999"/>
+            <text x="216" y="174" text-anchor="end" fill="#901B23">V3</text><rect x="226" y="154" width="144" height="24" fill="#901B23"/>
+            <text x="0" y="222" font-weight="700">D. Servicios</text>
+            <text x="216" y="208" text-anchor="end" fill="#5E5E5E">V2</text><rect x="226" y="188" width="108" height="24" fill="#E0B4B7"/>
+            <text x="216" y="236" text-anchor="end" fill="#901B23">V3</text><rect x="226" y="216" width="108" height="24" fill="#901B23"/>
+          </g>
+        </svg>
+        <div class="legend" style="margin-top:6px"><span><i class="sw" style="background:#901B23"></i>cumple</span><span><i class="sw" style="background:#E0B4B7"></i>parcial</span><span><i class="sw" style="background:#fff;border:1px solid #999"></i>no cumple</span></div>
+        <div class="card sm" style="padding:8px 16px;margin-top:10px"><b>GENDocs V2:</b> 15 atendidos, 1 completo</div>
+        <div class="card red sm" style="padding:8px 16px;margin-top:8px"><b>GENDocs V3:</b> 20 de 20 cumplidos</div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Escala: A, ningún indicador fuera de rango; B, uno; C, dos o más. Requisitos funcionales por bloque, verificados con la matriz de trazabilidad del Anexo D.</div>
+</section>
+
+<!-- ============================================================ 29 INCIDENCIA -->
+<section class="slide std" data-sec="oe3">
+  <div class="main">
+    <div class="kicker">Objetivo específico 3 · Respuesta a la pregunta de investigación</div>
+    <h2 class="t">El grado de modularidad incide directamente en tres <span style="white-space:nowrap">sub-características</span> y parcialmente en dos</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:26px;align-items:center">
+      <div style="width:560px">
+        <svg viewBox="0 0 560 318" width="560" height="318">
+          <rect x="0" y="112" width="200" height="96" rx="10" fill="#901B23"/>
+          <text x="100" y="153" fill="#fff" font-size="24" font-weight="700" text-anchor="middle">Grado de</text>
+          <text x="100" y="182" fill="#fff" font-size="24" font-weight="700" text-anchor="middle">modularidad</text>
+          <g stroke="#901B23" stroke-width="3.2" fill="none" marker-end="url(#ah)">
+            <path d="M200 140 C 262 140, 262 25, 320 25"/><path d="M200 151 C 262 151, 262 87, 320 87"/><path d="M200 162 C 262 162, 262 149, 320 149"/>
+          </g>
+          <g stroke="#8C8C8C" stroke-width="2.6" fill="none" stroke-dasharray="8 6" marker-end="url(#ahg)">
+            <path d="M200 174 C 262 174, 262 231, 320 231"/><path d="M200 185 C 262 185, 262 293, 320 293"/>
+          </g>
+          <g font-size="24">
+            <rect x="326" y="2" width="230" height="46" rx="8" fill="#F6E9EA" stroke="#901B23" stroke-width="1.5"/><text x="342" y="33" font-weight="700" fill="#901B23">Modularidad</text>
+            <rect x="326" y="64" width="230" height="46" rx="8" fill="#F6E9EA" stroke="#901B23" stroke-width="1.5"/><text x="342" y="95" font-weight="700" fill="#901B23">Reusabilidad</text>
+            <rect x="326" y="126" width="230" height="46" rx="8" fill="#F6E9EA" stroke="#901B23" stroke-width="1.5"/><text x="342" y="157" font-weight="700" fill="#901B23">Modificabilidad</text>
+            <rect x="326" y="208" width="230" height="46" rx="8" fill="#fff" stroke="#8C8C8C" stroke-width="1.5"/><text x="342" y="239" fill="#5E5E5E">Analizabilidad</text>
+            <rect x="326" y="270" width="230" height="46" rx="8" fill="#fff" stroke="#8C8C8C" stroke-width="1.5"/><text x="342" y="301" fill="#5E5E5E">Testeabilidad</text>
+          </g>
+        </svg>
+        <div class="sm" style="display:flex;gap:10px;align-items:center;margin-top:8px"><svg width="36" height="10" style="flex:none"><line x1="0" y1="5" x2="36" y2="5" stroke="#901B23" stroke-width="3.2"/></svg><span><b class="g">Directa:</b> depende de la estructura del código</span></div>
+        <div class="nt" style="display:flex;gap:10px;align-items:center;margin-top:4px"><svg width="36" height="10" style="flex:none"><line x1="0" y1="5" x2="36" y2="5" stroke="#8C8C8C" stroke-width="2.6" stroke-dasharray="6 5"/></svg><span><b>Parcial:</b> depende de las funciones y las pruebas</span></div>
+      </div>
+      <div class="f1 col" style="gap:10px">
+        <div class="lbl">Lo que queda en contra, con su causa</div>
+        <div class="card" style="padding:10px 16px"><div class="sm"><b>CBO medio: 1.38 → 1.86</b></div><div class="nt">cada dependencia inyectada cuenta como vecino</div></div>
+        <div class="card" style="padding:10px 16px"><div class="sm"><b>Acoplamiento por paquete: 2.13 → 4.65</b></div><div class="nt">129 de 172 aristas van a paquetes estables</div></div>
+        <div class="card" style="padding:10px 16px"><div class="sm"><b>Ciclomática del frontend: 91.49 → 115.92</b></div><div class="nt">un punto por función; hay más funciones pequeñas</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 30 CONCLUSIONES -->
+<section class="slide std" data-sec="con">
+  <div class="main">
+    <div class="kicker">Conclusiones</div>
+    <h2 class="t">Los tres objetivos específicos se cumplieron y, con ellos, el general</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:14px">
+      <div class="row f1" style="gap:16px">
+        <div class="card out topline f1" style="padding:14px 18px"><div class="lbl">Objetivo 1 · Analizar</div><div class="big" style="margin:6px 0 2px;font-size:48px">34.78 %</div><div class="nt">de clases cohesionadas en V2</div><div class="sm" style="margin-top:8px">Grado de modularidad <b>bajo</b>: capas técnicas, tres ciclos y poca cohesión.</div></div>
+        <div class="card out topline f1" style="padding:14px 18px"><div class="lbl">Objetivo 2 · Implementar</div><div class="big" style="margin:6px 0 2px;font-size:48px">16 módulos</div><div class="nt">y 20 requisitos funcionales</div><div class="sm" style="margin-top:8px">Monolito modular con <b>las tres capacidades</b> del objetivo.</div></div>
+        <div class="card out topline f1" style="padding:14px 18px"><div class="lbl">Objetivo 3 · Evaluar</div><div class="big" style="margin:6px 0 2px;font-size:48px">27 de 37</div><div class="nt">comparaciones a favor de V3</div><div class="sm" style="margin-top:8px">Sin ciclos, deuda técnica <b>3.0 veces menor</b> y 20 de 20 requisitos.</div></div>
+      </div>
+      <div class="card red" style="padding:12px 20px">
+        <div class="sm">Un grado de modularidad mayor incide <b>directamente</b> en modularidad, reusabilidad y modificabilidad, y <b>parcialmente</b> en analizabilidad y testeabilidad.</div>
+        <div class="nt" style="margin-top:6px">Para la facultad: documentos de consejo, actas de grado y certificaciones desde plantillas, numerados y organizados en la nube.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 31 RECOMENDACIONES -->
+<section class="slide std" data-sec="con">
+  <div class="main">
+    <div class="kicker">Recomendaciones</div>
+    <h2 class="t">Cuatro recomendaciones para la facultad y para estudios posteriores</h2>
+    <div class="rule"></div>
+    <div class="body" style="display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:16px">
+      <div class="card out" style="display:flex;gap:18px;align-items:center"><svg class="ic lg g" style="width:46px;height:46px"><use href="#i-server"/></svg><div><div class="txt"><b>Operación por la facultad</b></div><div class="nt" style="margin-top:4px">Asumir el sistema con su procedimiento de despliegue y respaldo.</div></div></div>
+      <div class="card out" style="display:flex;gap:18px;align-items:center"><svg class="ic lg g" style="width:46px;height:46px"><use href="#i-shield"/></svg><div><div class="txt"><b>Compuerta de calidad</b></div><div class="nt" style="margin-top:4px">Los rangos de las ocho métricas en la integración continua.</div></div></div>
+      <div class="card out" style="display:flex;gap:18px;align-items:center"><svg class="ic lg g" style="width:46px;height:46px"><use href="#i-refresh"/></svg><div><div class="txt"><b>Replicar el método</b></div><div class="nt" style="margin-top:4px">Evaluar con el mismo protocolo otros sistemas académico-administrativos de la universidad.</div></div></div>
+      <div class="card out" style="display:flex;gap:18px;align-items:center"><svg class="ic lg g" style="width:46px;height:46px"><use href="#i-target"/></svg><div><div class="txt"><b>Diseño antes-después</b></div><div class="nt" style="margin-top:4px">Conservarlo y ampliar su validez externa con más casos.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 32 GRACIAS -->
+<section class="slide std" data-sec="con">
+  <div style="position:absolute;left:0;right:0;top:140px;text-align:center">
+    <div style="font-size:84px;font-weight:700;color:var(--g);letter-spacing:.04em">GRACIAS</div>
+    <div class="txt" style="margin-top:8px">Jair Alexis Mera Toasa · Tutor: Ing. Santiago David Jara Moya MSc.</div>
+    <div class="nt" style="margin-top:6px">Universidad Técnica de Ambato · FISEI · Carrera de Software · 2026</div>
+  </div>
+  <div class="row" style="position:absolute;left:90px;right:90px;bottom:84px;gap:16px">
+    <div class="card red f1" style="text-align:center;padding:14px 12px"><div class="big" style="font-size:46px">27 de 37</div><div class="nt">comparaciones a favor</div></div>
+    <div class="card out f1" style="text-align:center;padding:14px 12px"><div class="big" style="font-size:46px">0</div><div class="nt">ciclos de dependencia</div></div>
+    <div class="card out f1" style="text-align:center;padding:14px 12px"><div class="big" style="font-size:46px">95.86 %</div><div class="nt">clases cohesionadas</div></div>
+    <div class="card out f1" style="text-align:center;padding:14px 12px"><div class="big" style="font-size:46px">20 de 20</div><div class="nt">requisitos cumplidos</div></div>
+  </div>
+</section>
+
+<!-- ============================================================ A1 DIVISOR ANEXO -->
+<section class="slide div">
+  <div class="bar"></div>
+  <div class="eyebrow">ANEXO</div>
+  <h2>Material de apoyo</h2>
+  <p>Diapositivas de respaldo para la ronda de preguntas.</p>
+  <div class="bignum">A</div>
+</section>
+
+<!-- ============================================================ A2 INDICADORES EN CONTRA, ACOPLAMIENTO -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Indicadores con lectura condicionada (1 de 2)</div>
+    <h2 class="t">Seis indicadores favorecen a V2: cuatro son de acoplamiento</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <table class="tb">
+        <tr><th style="width:268px">Indicador ↓</th><th style="width:116px">V2</th><th style="width:116px">V3</th><th>Causa y evidencia</th></tr>
+        <tr><td><b>CBO</b>, media y mediana</td><td>1.38; 0</td><td>1.86; 1</td><td>Cada dependencia inyectada y cada objeto de transferencia cuenta como vecino. Sobre el umbral hay menos clases: 8.05 % contra 8.70 %.</td></tr>
+        <tr><td><b>Acoplamiento medio</b> por paquete</td><td>2.13</td><td>4.65</td><td>129 de 172 aristas existen por construcción y apuntan a paquetes estables, sin ciclos.</td></tr>
+        <tr><td><b>Densidad</b> del grafo de paquetes</td><td>0.0968</td><td>0.1291</td><td>La unidad no es la misma. Con carpeta de primer nivel en las dos versiones se invierte: 0.1471 contra 0.1291.</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">↓ menor es mejor. Fuente: indicadores con lectura condicionada, sección 3.3.3 de la tesis.</div>
+</section>
+
+<!-- ============================================================ A3 INDICADORES EN CONTRA, COMPLEJIDAD -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Indicadores con lectura condicionada (2 de 2)</div>
+    <h2 class="t">Los otros dos son de complejidad ciclomática, y dos quedan divididos</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <table class="tb">
+        <tr><th style="width:300px">Indicador ↓</th><th style="width:168px">V2</th><th style="width:176px">V3</th><th>Causa y evidencia</th></tr>
+        <tr><td><b>Ciclomática</b> por millar, frontend y total</td><td>91.49; 100.31</td><td>115.92; 114.53</td><td>SonarQube suma un punto por función: 74.9 funciones por millar contra 53.5.</td></tr>
+        <tr><td><b>WMC</b>, percentil 90 <span class="chip" style="margin:0">dividido</span></td><td>8</td><td>10</td><td>Media, mediana y máximo bajan; el peso viene del número de métodos.</td></tr>
+        <tr><td><b>Acoplamiento aferente</b> por carpeta, mediana <span class="chip" style="margin:0">dividido</span></td><td>2</td><td>4</td><td>303 carpetas contra 113; la media y el percentil 90 bajan.</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">↓ menor es mejor. Fuente: indicadores con lectura condicionada, sección 3.3.3 de la tesis.</div>
+</section>
+
+<!-- ============================================================ N-CMP1 LAS 37 COMPARACIONES, 1 DE 4 -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Las 37 comparaciones (1 de 4)</div>
+    <h2 class="t">Modularidad del backend: 6 a favor de V3, 4 de V2 y 1 empate</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <table class="tb cp">
+        <tr><th>Indicador</th><th style="width:236px">V2</th><th style="width:236px">V3</th><th style="width:132px">Favorece</th></tr>
+        <tr><td>CBO, media y mediana ↓</td><td>1.38; 0</td><td>1.86; 1</td><td><span class="fv v2">V2</span></td></tr>
+        <tr><td>CBO, percentil 90 y máximo ↓</td><td>4; 13</td><td>4; 13</td><td><span class="fv em">empate</span></td></tr>
+        <tr><td>CBO, clases con cinco vecinos o más ↓</td><td>22 de 253 (8.70 %)</td><td>35 de 435 (8.05 %)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>LCOM medio ↓</td><td>2.93</td><td>0.66</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>LCOM, clases con dos componentes o más ↓</td><td>165 de 253 (65.22 %)</td><td>18 de 435 (4.14 %)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Acoplamiento aferente medio, paquete ↓</td><td>2.13 (23)</td><td>4.65 (37)</td><td><span class="fv v2">V2</span></td></tr>
+        <tr><td>Acoplamiento eferente medio, paquete ↓</td><td>2.13 (23)</td><td>4.65 (37)</td><td><span class="fv v2">V2</span></td></tr>
+        <tr><td>Densidad del grafo de paquetes ↓</td><td>0.0968 (49/506)</td><td>0.1291 (172/1,332)</td><td><span class="fv v2">V2</span></td></tr>
+        <tr><td>Ciclos de longitud dos entre paquetes ↓</td><td>1</td><td>0</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Paquetes en componente fuertemente conexa ↓</td><td>2 de 23</td><td>0 de 37</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Ciclos observados sobre esperados, paquete ↓</td><td>0.42 (1/2.37)</td><td>0.00 (0/11.11)</td><td><span class="fv v3">V3</span></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">↓ menor es mejor. Entre paréntesis, el número de paquetes o el cociente que da la cifra. Fuente: Tabla F1 de la tesis.</div>
+</section>
+
+<!-- ============================================================ N-CMP2 LAS 37 COMPARACIONES, 2 DE 4 -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Las 37 comparaciones (2 de 4)</div>
+    <h2 class="t">Modularidad del frontend y duplicación: 9 de 10 a favor de V3</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <table class="tb cp">
+        <tr><th>Indicador</th><th style="width:264px">V2</th><th style="width:264px">V3</th><th style="width:132px">Favorece</th></tr>
+        <tr class="grp"><td colspan="4">Modularidad del frontend · 7 comparaciones</td></tr>
+        <tr><td>Acoplamiento eferente medio, módulo ↓</td><td>4.19 (276)</td><td>3.26 (534)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Aferente por carpeta: media; mediana; p90 ↓</td><td>15.65; 2; 25 (113)</td><td>10.68; 4; 24 (303)</td><td><span class="fv dv">dividida</span></td></tr>
+        <tr><td>Eferente por carpeta: media; mediana; p90 ↓</td><td>33.01; 7; 52 (113)</td><td>13.86; 6; 33 (303)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Ciclos de longitud dos entre módulos ↓</td><td>2</td><td>0</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Módulos en componente fuertemente conexa ↓</td><td>4 de 276</td><td>0 de 534</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Ciclos observados sobre esperados, módulo ↓</td><td>0.23 (2/8.79)</td><td>0.00 (0/5.33)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Densidad del grafo de módulos ↓</td><td>0.0152</td><td>0.0061</td><td><span class="fv v3">V3</span></td></tr>
+        <tr class="grp"><td colspan="4">Reusabilidad · 3 comparaciones de duplicación; el CBO ya consta en modularidad</td></tr>
+        <tr><td>Duplicación de líneas, backend ↓</td><td>1.05 % (184/17,452)</td><td>0.98 % (471/47,993)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Duplicación de líneas, frontend ↓</td><td>19.64 % (4,713/23,999)</td><td>3.72 % (1,567/42,089)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Duplicación de líneas, total ↓</td><td>11.81 % (4,897/41,451)</td><td>2.26 % (2,038/90,082)</td><td><span class="fv v3">V3</span></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">↓ menor es mejor. Entre paréntesis, las unidades medidas o el cociente. Fuente: Tabla F1 y tabla de reusabilidad, sección 3.3.2 de la tesis.</div>
+</section>
+
+<!-- ============================================================ N-CMP3 LAS 37 COMPARACIONES, 3 DE 4 -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Las 37 comparaciones (3 de 4)</div>
+    <h2 class="t">Analizabilidad y modificabilidad: 5 a favor de V3, 2 de V2 y 1 dividida</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:10px">
+      <table class="tb cp">
+        <tr><th>Indicador</th><th style="width:224px">V2</th><th style="width:224px">V3</th><th style="width:132px">Favorece</th></tr>
+        <tr class="grp"><td colspan="4">Analizabilidad · 7 comparaciones</td></tr>
+        <tr><td>Complejidad cognitiva por millar, backend ↓</td><td>32.26</td><td>27.31</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Complejidad cognitiva por millar, frontend ↓</td><td>23.61</td><td>23.57</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Complejidad cognitiva por millar, total ↓</td><td>26.33</td><td>25.33</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Complejidad ciclomática por millar, backend ↓</td><td>119.57</td><td>112.96</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Complejidad ciclomática por millar, frontend ↓</td><td>91.49</td><td>115.92</td><td><span class="fv v2">V2</span></td></tr>
+        <tr><td>Complejidad ciclomática por millar, total ↓</td><td>100.31</td><td>114.53</td><td><span class="fv v2">V2</span></td></tr>
+        <tr><td>WMC por clase: media; mediana; p90; máximo ↓</td><td>4.60; 3; 8; 65</td><td>3.87; 2; 10; 35</td><td><span class="fv dv">dividida</span></td></tr>
+        <tr class="grp"><td colspan="4">Modificabilidad · 1 comparación; la duplicación total ya consta en reusabilidad</td></tr>
+        <tr><td>WMC, clases con 20 métodos ponderados o más ↓</td><td>6 de 253 (2.37 %)</td><td>9 de 435 (2.07 %)</td><td><span class="fv v3">V3</span></td></tr>
+      </table>
+      <div class="card soft sm" style="padding:8px 16px"><b>Ciclomática del frontend:</b> SonarQube suma un punto por función, 74.9 por millar contra 53.5.</div>
+    </div>
+  </div>
+  <div class="src">↓ menor es mejor. Fuente: tablas de analizabilidad y de modificabilidad, sección 3.3.2, y Tabla F2 de la tesis.</div>
+</section>
+
+<!-- ============================================================ N-CMP4 LAS 37 COMPARACIONES, 4 DE 4 -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Las 37 comparaciones (4 de 4)</div>
+    <h2 class="t">Testeabilidad y mantenibilidad global: 7 de 8 a favor de V3</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:10px">
+      <table class="tb cp">
+        <tr><th>Indicador</th><th style="width:226px">V2</th><th style="width:210px">V3</th><th style="width:180px">Favorece</th></tr>
+        <tr class="grp"><td colspan="4">Testeabilidad · 2 comparaciones; la complejidad ciclomática ya consta en analizabilidad</td></tr>
+        <tr><td>Cobertura de líneas, backend ↑</td><td>sin pruebas</td><td>79.8 %</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Cobertura de líneas, frontend ↑</td><td>sin pruebas</td><td>sin pruebas</td><td><span class="fv sv">sin veredicto</span></td></tr>
+        <tr class="grp"><td colspan="4">Mantenibilidad global · 6 comparaciones</td></tr>
+        <tr><td>Deuda técnica, minutos por millar, backend ↓</td><td>215.22 (2,115)</td><td>24.54 (787)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Deuda técnica, minutos por millar, frontend ↓</td><td>99.18 (2,126)</td><td>62.50 (2,262)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Deuda técnica, minutos por millar, total ↓</td><td>135.66 (4,241)</td><td>44.66 (3,049)</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Ratio de deuda técnica, backend; frontend ↓</td><td>0.7 %; 0.3 %</td><td>0.1 %; 0.2 %</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Índice de mantenibilidad medio ↑</td><td>103.75</td><td>109.60</td><td><span class="fv v3">V3</span></td></tr>
+        <tr><td>Índice de mantenibilidad, clases bajo 65 ↓</td><td>48 de 253 (18.97 %)</td><td>6 de 435 (1.38 %)</td><td><span class="fv v3">V3</span></td></tr>
+      </table>
+      <div class="card red sm" style="padding:8px 16px"><b>37 comparaciones:</b> 27 a favor de V3 · 6 de V2 · 2 divididas · 1 empate · 1 sin veredicto</div>
+    </div>
+  </div>
+  <div class="src">↓ menor es mejor; ↑ mayor es mejor. Entre paréntesis, los minutos de deuda. Fuente: tablas de testeabilidad y de mantenibilidad global, sección 3.3.2.</div>
+</section>
+
+<!-- ============================================================ A4 ESCALA -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Escala del estudio</div>
+    <h2 class="t">La escala aplica los rangos de referencia de cada métrica</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:10px">
+      <table class="tb">
+        <tr><th style="width:204px;white-space:nowrap">Sub-característica</th><th style="width:214px">Indicadores</th><th>Fuera de rango en V2</th><th style="width:262px">Fuera de rango en V3</th><th class="c" style="width:52px">V2</th><th class="c" style="width:52px">V3</th></tr>
+        <tr><td>Modularidad</td><td>CBO y LCOM</td><td>LCOM medio 2.93</td><td>ninguno (0.66)</td><td class="c"><b>B</b></td><td class="c g"><b>A</b></td></tr>
+        <tr><td>Reusabilidad</td><td>duplicación y CBO</td><td>duplicación, 19.64 %</td><td>ninguno</td><td class="c"><b>B</b></td><td class="c g"><b>A</b></td></tr>
+        <tr><td>Analizabilidad</td><td>WMC</td><td>ninguno (4.60)</td><td>ninguno (3.87)</td><td class="c"><b>A</b></td><td class="c g"><b>A</b></td></tr>
+        <tr><td>Modificabilidad</td><td>duplicación y WMC</td><td>duplicación, 19.64 %</td><td>ninguno</td><td class="c"><b>B</b></td><td class="c g"><b>A</b></td></tr>
+        <tr><td>Testeabilidad</td><td>cobertura de líneas</td><td>sin pruebas en ninguna capa</td><td>sin pruebas en el frontend</td><td class="c"><b>C</b></td><td class="c g"><b>B</b></td></tr>
+        <tr><td>Global</td><td>índice de mantenibilidad</td><td>ninguno (103.75)</td><td>ninguno (109.60)</td><td class="c"><b>A</b></td><td class="c g"><b>A</b></td></tr>
+      </table>
+      <div class="card soft sm" style="padding:8px 16px"><b>A:</b> ningún indicador fuera de rango · <b>B:</b> uno · <b>C:</b> dos o más. La duplicación fuera de rango es la del frontend.</div>
+    </div>
+  </div>
+  <div class="src">La letra nativa de SonarQube da A a las cuatro bases y no discrimina entre versiones (Tabla F3). Métricas de clase: en rango cuando la media queda dentro del umbral.</div>
+</section>
+
+<!-- ============================================================ N-HERR HERRAMIENTAS DE MEDICIÓN -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Herramientas de medición</div>
+    <h2 class="t">Las herramientas se fijaron por versión antes de medir</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:12px">
+      <table class="tb">
+        <tr><th style="width:364px">Herramienta</th><th style="width:176px">Versión</th><th>Qué mide</th><th style="width:186px">Dónde</th></tr>
+        <tr><td><svg class="bi in" style="fill:#126ED3"><use href="#b-sonarqubeserver"/></svg><b>SonarQube</b> Community Build, con SonarScanner CLI</td><td>26.7.0.124771<br>8.0.1.6346</td><td>Complejidad ciclomática y cognitiva, duplicación, deuda técnica y calificaciones</td><td>V2 y V3, las dos capas</td></tr>
+        <tr><td><svg class="bi in" style="fill:#777BB4"><use href="#b-php"/></svg><b>PHPMetrics</b>, sobre PHP 8.1.34</td><td>2.10.0</td><td>CBO, LCOM, WMC, índice de mantenibilidad y acoplamiento por paquete</td><td>V2, backend</td></tr>
+        <tr><td><svg class="bi in" style="fill:#3178C6"><use href="#b-typescript"/></svg><b>Analizador CK</b> sobre TypeScript, con ts-morph</td><td>27.0.2</td><td>CBO, LCOM, WMC e índice de mantenibilidad, con las definiciones de PHPMetrics</td><td>V3, backend</td></tr>
+        <tr><td><svg class="ic" style="vertical-align:-5px;margin-right:8px;width:28px;height:28px"><use href="#i-link"/></svg><b>dependency-cruiser</b>, con TypeScript 5.9.3</td><td>16.10.4</td><td>Acoplamiento aferente y eferente, inestabilidad y ciclos</td><td>V2, frontend; V3, las dos capas</td></tr>
+      </table>
+      <div class="card soft sm" style="padding:8px 16px">Mismas definiciones y versiones en las dos mediciones. El código de V2 permaneció congelado mientras se midió.</div>
+    </div>
+  </div>
+  <div class="src">Fuente: Tabla E1 de la tesis, herramientas de medición con su versión, y tabla de condiciones de la medición, sección 3.1.1.</div>
+</section>
+
+<!-- ============================================================ N-TAM TAMAÑO Y ALCANCE -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Tamaño y alcance funcional</div>
+    <h2 class="t">V3 tiene más código porque cubre más alcance funcional</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:22px">
+      <div style="width:690px">
+        <table class="tb cp">
+          <tr><th>Indicador de tamaño o alcance</th><th style="width:104px">V2</th><th style="width:104px">V3</th><th style="width:100px">Razón</th></tr>
+          <tr><td>Líneas de código, backend</td><td>9,827</td><td>32,074</td><td><b>3.3</b></td></tr>
+          <tr><td>Líneas de código, frontend</td><td>21,435</td><td>36,190</td><td>1.7</td></tr>
+          <tr><td>Archivos analizados, backend</td><td>278</td><td>540</td><td>1.9</td></tr>
+          <tr><td>Archivos analizados, frontend</td><td>273</td><td>532</td><td>1.9</td></tr>
+          <tr><td>Rutas HTTP de negocio</td><td>88</td><td>220</td><td>2.5</td></tr>
+          <tr><td>Controladores de dominio</td><td>33</td><td>64</td><td>1.9</td></tr>
+          <tr><td>Modelos de datos o entidades</td><td>34</td><td>43</td><td>1.3</td></tr>
+          <tr><td>Roles de usuario</td><td>4</td><td>5</td><td></td></tr>
+          <tr><td>Requisitos atendidos, de veinte</td><td>15</td><td>20</td><td></td></tr>
+        </table>
+      </div>
+      <div class="col f1" style="gap:12px">
+        <div class="card red" style="padding:12px 16px"><div class="lbl">Por qué crece</div><div class="sm" style="margin-top:4px">Cubre los <b>20 requisitos</b>; V2 atendía 15, uno por completo</div></div>
+        <div class="card" style="padding:12px 16px"><div class="lbl">Más código, menos deuda</div><div class="sm" style="margin-top:4px">Backend 3.3 veces mayor, con <b>787 min</b> de deuda técnica contra 2,115</div></div>
+        <div class="card out sm" style="padding:12px 16px">Por eso ninguna cifra se compara en valor absoluto.</div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: tabla de contexto de tamaño y alcance, sección 3.3.1 de la tesis; [63] Lehman, 1980, leyes de evolución del software.</div>
+</section>
+
+<!-- ============================================================ N-CALC1 CÓMO SE CALCULÓ LA MATRIZ DE METODOLOGÍA -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Cómo se calculó: marco de desarrollo</div>
+    <h2 class="t">XP obtuvo 86.4 por suma ponderada de seis criterios</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:10px">
+      <table class="tb cp">
+        <tr><th style="width:60px">ID</th><th>Criterio</th><th class="c" style="width:120px">Peso (%)</th><th class="c" style="width:110px">Scrum</th><th class="c" style="width:110px">Kanban</th><th class="c" style="width:110px">XP</th></tr>
+        <tr><td>C1</td><td>Viabilidad con equipo unipersonal y supervisión académica</td><td class="c">25</td><td class="c">2</td><td class="c">5</td><td class="c">4</td></tr>
+        <tr><td>C2</td><td>Prácticas de ingeniería que actúan sobre el código</td><td class="c">22</td><td class="c">1</td><td class="c">1</td><td class="c g"><b>5</b></td></tr>
+        <tr><td>C3</td><td>Tolerancia a la replanificación dentro de la iteración</td><td class="c">15</td><td class="c">3</td><td class="c">5</td><td class="c">4</td></tr>
+        <tr><td>C4</td><td>Entregables incrementales documentables</td><td class="c">15</td><td class="c">5</td><td class="c">2</td><td class="c">4</td></tr>
+        <tr><td>C5</td><td>Sin sobrecarga de ceremonias y roles</td><td class="c">13</td><td class="c">2</td><td class="c">5</td><td class="c">4</td></tr>
+        <tr><td>C6</td><td>Validación frecuente con el usuario institucional</td><td class="c">10</td><td class="c">4</td><td class="c">3</td><td class="c">5</td></tr>
+        <tr><td></td><td><b>Calificación ponderada, sobre 100</b></td><td class="c"><b>100</b></td><td class="c"><b>51.6</b></td><td class="c"><b>69.4</b></td><td class="c g"><b>86.4</b></td></tr>
+      </table>
+      <div class="row" style="gap:12px">
+        <div class="card red sm" style="padding:10px 16px;width:430px"><b>Calificación</b> = Σ (peso × puntuación) ÷ 5<div class="nt">puntuación de 1 a 5 por criterio</div></div>
+        <div class="card sm f1" style="padding:10px 16px"><b>XP:</b> (25·4 + 22·5 + 15·4 + 15·4 + 13·4 + 10·5) ÷ 5<div>= 432 ÷ 5 = <b class="g">86.4</b></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: matriz de selección del marco de desarrollo, sección 3.2.1 de la tesis; factores de selección de [61] Saleh, 2019.</div>
+</section>
+
+<!-- ============================================================ N-CALC2 CÓMO SE CALCULÓ: INSTRUMENTOS -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Cómo se calculó: instrumentos</div>
+    <h2 class="t">Cada cifra de los instrumentos sale de las nueve respuestas</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <table class="tb">
+        <tr><th style="width:262px">Cifra</th><th>Cómo se calcula</th><th style="width:330px">Cuenta</th></tr>
+        <tr><td><b>Media Likert</b>, 4.78</td><td>suma de las respuestas, de 1 a 5, entre 9</td><td>(2·4 + 7·5) ÷ 9 = 43 ÷ 9</td></tr>
+        <tr><td><b>Porcentaje</b>, 88.9 %</td><td>respuestas «Sí» entre 9</td><td>8 ÷ 9; con 7 ÷ 9, 77.8 %</td></tr>
+        <tr><td><b>Juicio de expertos</b>, 4.22</td><td>promedio de tres jueces por criterio, de 1 a 5</td><td>por reactivo y por instrumento</td></tr>
+        <tr><td><b>CVR</b>, 1.00 y 0.33</td><td>(nₑ − N/2) ÷ (N/2), con N = 3 jueces</td><td>3 de 3: 1.5 ÷ 1.5; 2 de 3: 0.5 ÷ 1.5</td></tr>
+        <tr><td><b>Alfa de Cronbach</b>, 0.83</td><td>k/(k−1) · (1 − Σ varianzas de ítem ÷ varianza del total)</td><td>k = 9 ítems Likert</td></tr>
+        <tr><td><b>KR-20</b>, 0.78</td><td>k/(k−1) · (1 − Σ p·q ÷ varianza del total)</td><td>k = 5 ítems dicotómicos</td></tr>
+        <tr><td><b>Muestra</b>, n = 9.77</td><td>N·z²·p·q ÷ (e²·(N−1) + z²·p·q)</td><td>N = 10, z = 1.96, p = q = 0.5, e = 0.05</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">Fuente: tabulación del cuestionario y validación, sección 2.2.3 de la tesis; [56] Lawshe, 1975; [57] Cronbach, 1951; [58] Kuder y Richardson, 1937.</div>
+</section>
+
+<!-- ============================================================ N-CALC3 CÓMO SE CALCULÓ: MÉTRICAS -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Cómo se calculó: métricas</div>
+    <h2 class="t">Cada cifra de la evaluación es un cociente que se puede rehacer</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <table class="tb">
+        <tr><th style="width:310px">Cifra</th><th>Cómo se calcula</th><th style="width:356px">Cuenta, V2 y V3</th></tr>
+        <tr><td><b>Clases cohesionadas</b><br>34.78 % → 95.86 %</td><td>clases con un solo componente de LCOM entre el total de clases</td><td>88 ÷ 253<br>417 ÷ 435</td></tr>
+        <tr><td><b>Duplicación</b><br>11.81 % → 2.26 %</td><td>líneas duplicadas entre líneas físicas</td><td>4,897 ÷ 41,451<br>2,038 ÷ 90,082</td></tr>
+        <tr><td><b>Deuda por millar</b><br>135.66 → 44.66</td><td>minutos de deuda entre millares de líneas de código; «3.0 veces» es 135.66 ÷ 44.66</td><td>4,241 ÷ 31.262<br>3,049 ÷ 68.264</td></tr>
+        <tr><td><b>Ciclos esperados</b><br>2.37 y 11.11</td><td>pares de paquetes por la densidad del grafo al cuadrado</td><td>253 × 0.0968²<br>666 × 0.1291²</td></tr>
+        <tr><td><b>Requisitos de V2</b><br>75 % y 40 %</td><td>atendidos entre veinte; con cada parcial contado como medio</td><td>15 ÷ 20<br>(1 + 14 × 0.5) ÷ 20</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">Fuente: tablas de la sección 3.3 y Anexo F de la tesis. Las cuentas usan los conteos que publica cada tabla.</div>
+</section>
+
+<!-- ============================================================ N-ISO ALCANCE DE LA EVALUACIÓN -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Alcance de la evaluación</div>
+    <h2 class="t">La mantenibilidad se evaluó en sus cinco <span style="white-space:nowrap">sub-características</span></h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:16px;align-items:flex-start">
+      <div class="card topline" style="width:730px;padding:14px 18px">
+        <div class="lbl" style="color:var(--g)">Mantenibilidad · análisis estático con ocho métricas</div>
+        <table class="tb" style="margin-top:8px">
+          <tr><td style="width:204px"><b>Modularidad</b></td><td>acoplamiento, cohesión y ciclos</td></tr>
+          <tr><td><b>Reusabilidad</b></td><td>duplicación de líneas y CBO</td></tr>
+          <tr><td><b>Analizabilidad</b></td><td>complejidad cognitiva y ciclomática, y WMC</td></tr>
+          <tr><td><b>Modificabilidad</b></td><td>duplicación de líneas y WMC</td></tr>
+          <tr><td><b>Testeabilidad</b></td><td>complejidad ciclomática y cobertura de líneas</td></tr>
+          <tr><td><b>Global</b></td><td>deuda técnica e índice de mantenibilidad</td></tr>
+        </table>
+      </div>
+      <div class="col f1" style="gap:12px">
+        <div class="card soft" style="padding:12px 16px"><div class="lbl" style="color:var(--g)">Adecuación funcional</div><div class="sm" style="margin-top:4px">Completitud, con la matriz de trazabilidad de los 20 requisitos</div></div>
+        <div class="card out" style="padding:12px 16px"><div class="lbl">Requisitos de diseño</div><div class="sm" style="margin-top:4px">Seguridad, fiabilidad, eficiencia de desempeño, compatibilidad, capacidad de interacción y flexibilidad: RNF-06 a RNF-13</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: [47] ISO/IEC 25010:2023; tabla de cobertura de la norma, sección 3.3 de la tesis. Los objetivos delimitan la evaluación.</div>
+</section>
+
+<!-- ============================================================ A6 TECNOLOGÍAS, BACKEND -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Selección de tecnologías (1 de 2)</div>
+    <h2 class="t">Backend: solo NestJS prescribe una unidad de modularidad</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:10px">
+      <div class="sm">Tres criterios en cada capa: <b>soporte a la separación en módulos</b>, el de mayor peso porque es la variable independiente; continuidad; y adopción.</div>
+      <table class="tb" style="table-layout:fixed">
+        <tr><th style="width:396px">Criterio</th><th><svg class="bi in" style="fill:#fff"><use href="#b-laravel"/></svg>Laravel (V2)</th><th><svg class="bi in" style="fill:#fff"><use href="#b-express"/></svg>Express</th><th><svg class="bi in" style="fill:#fff"><use href="#b-nestjs"/></svg>NestJS ✓</th></tr>
+        <tr><td><b>Unidad de modularidad prescrita</b><br><span class="chip solid" style="margin:4px 0 0">mayor peso</span></td><td>Paquetes por capa técnica</td><td>Ninguna</td><td class="ok">Módulos con encapsulación e inyección de dependencias</td></tr>
+        <tr><td>Lenguaje compartido con el frontend</td><td>No</td><td>Sí</td><td class="ok">Sí</td></tr>
+        <tr><td>Continuidad con la versión anterior</td><td>Sí</td><td>No</td><td class="ok">No</td></tr>
+        <tr><td>Uso reportado en 2025</td><td>8.9 %</td><td>19.9 %</td><td class="ok">6.7 %</td></tr>
+      </table>
+      <div class="card soft sm" style="padding:8px 16px">La adopción de Express no compensa que no prescriba ninguna unidad de modularidad. La continuidad con PHP pesó menos porque el área técnica cambió con cada versión.</div>
+    </div>
+  </div>
+  <div class="src">Fuente: comparación de frameworks de backend, sección 3.2.2 de la tesis. Uso: encuestados que usaron la tecnología en el último año, [62] Stack Overflow, 2025.</div>
+</section>
+
+<!-- ============================================================ A6B TECNOLOGÍAS, FRONTEND Y BASE DE DATOS -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Selección de tecnologías (2 de 2)</div>
+    <h2 class="t">Next.js conserva React, y PostgreSQL es además el más usado</h2>
+    <div class="rule"></div>
+    <div class="body col" style="gap:10px">
+      <table class="tb" style="table-layout:fixed">
+        <tr><th style="width:396px">Frontend</th><th><svg class="bi in" style="fill:#fff"><use href="#b-react"/></svg>React con Vite (V2)</th><th><svg class="bi in" style="fill:#fff"><use href="#b-angular"/></svg>Angular</th><th><svg class="bi in" style="fill:#fff"><use href="#b-nextdotjs"/></svg>Next.js ✓</th></tr>
+        <tr><td><b>Enrutador</b></td><td>Biblioteca externa, rutas declaradas en código</td><td>Integrado en el marco</td><td class="ok">Por sistema de archivos, con segmentos dinámicos</td></tr>
+        <tr><td>Continuidad con la versión anterior</td><td>Sí</td><td>No</td><td class="ok">Sí, conserva React</td></tr>
+        <tr><td>Uso reportado en 2025</td><td>44.7 % (React)</td><td>18.2 %</td><td class="ok">20.8 %</td></tr>
+      </table>
+      <table class="tb" style="table-layout:fixed">
+        <tr><th style="width:396px">Base de datos</th><th><svg class="bi in" style="fill:#fff"><use href="#b-postgresql"/></svg>PostgreSQL ✓</th><th><svg class="bi in" style="fill:#fff"><use href="#b-mysql"/></svg>MySQL (V2)</th><th><svg class="bi in" style="fill:#fff"><use href="#b-mongodb"/></svg>MongoDB</th></tr>
+        <tr><td><b>Modelo de datos</b></td><td class="ok">Relacional</td><td>Relacional</td><td>Documental</td></tr>
+        <tr><td>Búsqueda sin tildes y por trigramas</td><td class="ok">unaccent, pg_trgm</td><td>No aplica</td><td>No aplica</td></tr>
+        <tr><td>Uso reportado en 2025</td><td class="ok">55.6 %</td><td>40.5 %</td><td>24 %</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="src">Fuente: comparaciones de la sección 3.2.2 de la tesis. Un segmento dinámico resuelve desde datos el módulo y el submódulo. Uso: [62] Stack Overflow, 2025.</div>
+</section>
+
+<!-- ============================================================ A8 NUMERACIÓN -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Numeración secuencial</div>
+    <h2 class="t">Un número puede estar reservado, usado o encolado</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:20px;align-items:center">
+      <div style="width:730px">
+        <svg viewBox="0 0 730 396" width="730" height="396">
+          <circle cx="100" cy="32" r="11" fill="#1E1E1E"/>
+          <g stroke="#901B23" stroke-width="2.6" fill="none" marker-end="url(#ah)">
+            <line x1="100" y1="44" x2="100" y2="166"/>
+            <path d="M112 32 H470 V166"/>
+            <line x1="192" y1="198" x2="376" y2="198"/>
+            <line x1="440" y1="228" x2="440" y2="326"/>
+            <line x1="500" y1="326" x2="500" y2="230"/>
+          </g>
+          <rect x="10" y="170" width="180" height="56" rx="10" fill="#F7F3F0" stroke="#8C8C8C" stroke-width="1.5"/>
+          <rect x="380" y="170" width="180" height="56" rx="10" fill="#901B23"/>
+          <rect x="380" y="330" width="180" height="56" rx="10" fill="#F6E9EA" stroke="#901B23" stroke-width="1.5"/>
+          <g font-size="24" font-weight="700" text-anchor="middle"><text x="100" y="206">Reservado</text><text x="470" y="206" fill="#fff">Usado</text><text x="470" y="366" fill="#901B23">Encolado</text></g>
+          <g font-size="24" fill="#1E1E1E">
+            <text x="290" y="23" text-anchor="middle">generar con el siguiente número</text>
+            <text x="114" y="96">reservar un rango</text><text x="114" y="124">para un consejo</text>
+            <text x="284" y="162" text-anchor="middle">generar con un</text><text x="284" y="188" text-anchor="middle">número reservado</text>
+            <text x="428" y="286" text-anchor="end">eliminar el documento</text>
+            <text x="512" y="270">generar con el menor</text><text x="512" y="298">número encolado</text>
+          </g>
+        </svg>
+      </div>
+      <div class="col f1" style="gap:12px">
+        <div class="card" style="padding:14px 16px">
+          <div class="lbl">Ámbitos, con reinicio anual</div>
+          <div class="sm" style="margin-top:6px"><b>Documentos:</b> por año del módulo</div>
+          <div class="sm" style="margin-top:4px"><b>Actas de grado:</b> por carrera y año</div>
+          <div class="sm" style="margin-top:4px"><b>Certificaciones:</b> por año de Secretaría de Facultad</div>
+        </div>
+        <div class="card out sm" style="padding:14px 16px">En certificaciones, el menor encolado se toma con bloqueo de fila; si no hay, el siguiente con bloqueo consultivo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ A9 GENERACIÓN DE DOCUMENTO -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Generación de un documento</div>
+    <h2 class="t">El documento se registra al instante y se genera en cola</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:0;align-items:stretch">
+      <div class="card out f1 col" style="gap:12px;border-top:5px solid var(--g);padding:14px 18px">
+        <div class="lbl" style="color:var(--g)">Al crear el documento</div>
+        <div class="step"><b>1</b><div>La secretaria elige plantilla, número, funcionarios y estudiantes.</div></div>
+        <div class="step"><b>2</b><div>La numeración asigna el número: nuevo, reservado o encolado.</div></div>
+        <div class="step"><b>3</b><div>El documento se guarda «en generación», con sus variables.</div></div>
+        <div class="step"><b>4</b><div>La generación se encola y la interfaz responde de inmediato.</div></div>
+      </div>
+      <div class="arrow" style="width:44px">→</div>
+      <div class="card f1 col" style="gap:12px;border-top:5px solid var(--v2);padding:14px 18px">
+        <div class="lbl">Generación asíncrona</div>
+        <div class="step"><b>5</b><div>La cola procesa el trabajo, con hasta cinco intentos.</div></div>
+        <div class="step"><b>6</b><div>Drive copia la plantilla en la carpeta del consejo.</div></div>
+        <div class="step"><b>7</b><div>Docs reemplaza las variables.</div></div>
+        <div class="step"><b>8</b><div>Queda «generado» o «fallido», y el usuario recibe el aviso.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Fuente: diagrama de secuencia de la generación de un documento, sección 3.2.6 de la tesis; requisitos RF-05, RF-06 y RF-16.</div>
+</section>
+
+<!-- ============================================================ A10 INFRAESTRUCTURA -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Infraestructura y respaldo</div>
+    <h2 class="t">Cuatro contenedores en la máquina virtual de la facultad</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:16px;align-items:flex-start">
+      <div class="f1" style="border:2px solid var(--g);border-radius:12px;padding:12px 14px">
+        <div class="lbl" style="color:var(--g)">Máquina virtual · <svg class="bi in"><use href="#b-almalinux"/></svg>AlmaLinux 8 · <svg class="bi in" style="fill:#2496ED;"><use href="#b-docker"/></svg>Docker Compose</div>
+        <div class="row" style="gap:10px;margin-top:10px">
+          <div class="card out f1" style="padding:8px 12px"><svg class="bi" style="display:block;margin-bottom:6px"><use href="#b-nextdotjs"/></svg><div class="sm"><b>frontend</b></div><div class="nt">Next.js</div></div>
+          <div class="card out f1" style="padding:8px 12px"><svg class="bi" style="fill:#E0234E;display:block;margin-bottom:6px"><use href="#b-nestjs"/></svg><div class="sm"><b>backend</b></div><div class="nt">NestJS y colas</div></div>
+          <div class="card out f1" style="padding:8px 12px"><svg class="bi" style="fill:#4169E1;display:block;margin-bottom:6px"><use href="#b-postgresql"/></svg><div class="sm"><b>postgres</b></div><div class="nt">con volumen</div></div>
+          <div class="card out f1" style="padding:8px 12px"><svg class="bi" style="fill:#FF4438;display:block;margin-bottom:6px"><use href="#b-redis"/></svg><div class="sm"><b>bull_redis</b></div><div class="nt">con volumen</div></div>
+        </div>
+        <div class="row" style="gap:10px;margin-top:10px">
+          <div class="card f1" style="padding:8px 12px"><div class="sm"><b>Variables de entorno</b></div><div class="nt">fuera del control de versiones</div></div>
+          <div class="card red f1" style="padding:8px 12px"><div class="sm"><b>Respaldo diario</b></div><div class="nt">retención de siete días</div></div>
+        </div>
+        <div class="sm" style="margin-top:12px"><b>Cada actualización:</b> respaldo previo → API con migraciones y verificación de salud → aplicación web</div>
+      </div>
+      <div class="col" style="width:300px;gap:10px">
+        <div class="lbl">Fuera del servidor</div>
+        <div class="card icl sm" style="padding:10px 14px"><svg class="ic g"><use href="#i-users"/></svg><div>Navegadores del personal</div></div>
+        <div class="card icl sm" style="padding:10px 14px"><svg class="bi" style="fill:#4285F4;"><use href="#b-googledrive"/></svg><div>API de Google: Drive, Docs y Sheets</div></div>
+        <div class="card icl sm" style="padding:10px 14px"><svg class="ic g"><use href="#i-mail"/></svg><div>Servidor SMTP</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ A11 REQUISITOS A Y C -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Requisitos funcionales (1 de 2)</div>
+    <h2 class="t">Bloques A y C: nueve requisitos, todos cumplidos en V3</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:28px">
+      <div class="f1 rf">
+        <div class="grp">A · Núcleo de configuración dinámica</div>
+        <div><b>RF-01</b>Módulos y submódulos definidos en datos</div>
+        <div><b>RF-02</b>Registro de carrera en cascada</div>
+        <div><b>RF-03</b>Procesos por módulo, con carpeta propia</div>
+        <div><b>RF-04</b>Plantillas centralizadas y su migración</div>
+        <div><b>RF-20</b>Reportes con filtros, gráficos y Excel</div>
+      </div>
+      <div class="f1 rf">
+        <div class="grp">C · Seguridad y trazabilidad</div>
+        <div><b>RF-13</b>Autenticación y recuperación de contraseña</div>
+        <div><b>RF-14</b>Acceso por usuario, módulo, submódulo y carrera</div>
+        <div><b>RF-15</b>Auditoría de inserciones, cambios y borrados</div>
+        <div><b>RF-16</b>Notificación del resultado de la generación</div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Evidencia por requisito en la matriz de trazabilidad (Tabla D1); veredicto del antecedente en la Tabla D2.</div>
+</section>
+
+<!-- ============================================================ A12 REQUISITOS B Y D -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Requisitos funcionales (2 de 2)</div>
+    <h2 class="t">Bloques B y D: once requisitos, todos cumplidos en V3</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:28px">
+      <div class="rf" style="width:610px">
+        <div class="grp">B · Operación documental</div>
+        <div><b>RF-05</b>Generar, regenerar y reintentar documentos</div>
+        <div><b>RF-06</b>Numeración secuencial con reserva y reinicio anual</div>
+        <div><b>RF-07</b>Consejos: miembros, asistencia y generación</div>
+        <div><b>RF-08</b>Actas de grado: tribunal, calificaciones y estados</div>
+        <div><b>RF-09</b>Carga en lote de estudiantes, funcionarios y actas</div>
+        <div><b>RF-10</b>Funcionarios, cargos, carreras y aulas</div>
+        <div><b>RF-11</b>Certificaciones y procedimientos por correo</div>
+        <div><b>RF-12</b>Búsqueda sin tildes ni orden de nombres</div>
+      </div>
+      <div class="f1 rf">
+        <div class="grp">D · Integración con servicios externos</div>
+        <div><b>RF-17</b>Archivos en la nube por módulo, submódulo y año</div>
+        <div><b>RF-18</b>Generación y vista previa en la nube; PDF</div>
+        <div><b>RF-19</b>Correo con adjuntos desde la cuenta institucional</div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Evidencia por requisito en la matriz de trazabilidad (Tabla D1); veredicto del antecedente en la Tabla D2.</div>
+</section>
+
+<!-- ============================================================ A13 CASOS DE USO -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Casos de uso</div>
+    <h2 class="t">Once casos de uso principales sobre tres actores</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:20px">
+      <div style="width:730px">
+        <table class="tb" style="line-height:1.15">
+          <tr><th style="width:96px">Código</th><th>Caso de uso</th><th style="width:246px">Actor</th></tr>
+          <tr><td style="padding:4px 10px">CU-01</td><td style="padding:4px 10px">Registrar carrera</td><td style="padding:4px 10px">Administrador</td></tr>
+          <tr><td style="padding:4px 10px">CU-02</td><td style="padding:4px 10px">Conceder acceso</td><td style="padding:4px 10px">Administrador</td></tr>
+          <tr><td style="padding:4px 10px">CU-03</td><td style="padding:4px 10px">Iniciar nuevo año académico</td><td style="padding:4px 10px">Administrador</td></tr>
+          <tr><td style="padding:4px 10px">CU-04</td><td style="padding:4px 10px">Gestionar procesos y plantillas</td><td style="padding:4px 10px">Secretaria de carrera</td></tr>
+          <tr><td style="padding:4px 10px">CU-05</td><td style="padding:4px 10px">Generar documento</td><td style="padding:4px 10px">Secretaria de carrera</td></tr>
+          <tr><td style="padding:4px 10px">CU-06</td><td style="padding:4px 10px">Convocar consejo</td><td style="padding:4px 10px">Secretaria de carrera</td></tr>
+          <tr><td style="padding:4px 10px">CU-07</td><td style="padding:4px 10px">Registrar acta de grado</td><td style="padding:4px 10px">Secretaria de carrera</td></tr>
+          <tr><td style="padding:4px 10px">CU-08</td><td style="padding:4px 10px">Cargar actas de grado en lote</td><td style="padding:4px 10px">Administrador</td></tr>
+          <tr><td style="padding:4px 10px">CU-09</td><td style="padding:4px 10px">Cerrar actas de grado en lote</td><td style="padding:4px 10px">Administrador</td></tr>
+          <tr><td style="padding:4px 10px">CU-10</td><td style="padding:4px 10px">Generar y enviar certificación</td><td style="padding:4px 10px">Secretaria de facultad</td></tr>
+          <tr><td style="padding:4px 10px">CU-11</td><td style="padding:4px 10px">Enviar procedimiento</td><td style="padding:4px 10px">Secretaria de facultad</td></tr>
+        </table>
+      </div>
+      <div class="col f1" style="gap:12px">
+        <div class="card red" style="padding:14px 16px"><div class="lbl">Tres actores, cinco roles</div><div class="sm" style="margin-top:6px"><b>Administrador:</b> roles administrador y administrador temporal</div></div>
+        <div class="card sm" style="padding:14px 16px"><b>Secretarias de carrera y de facultad:</b> rol escritor, con distintos submódulos</div>
+        <div class="card out nt" style="padding:14px 16px">El administrador hereda los casos de la secretaria de carrera.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ A14 MODELO RELACIONAL -->
+<section class="slide std" data-sec="anx">
+  <div class="main">
+    <div class="kicker">Anexo · Base de datos</div>
+    <h2 class="t">La estructura de módulos se guarda en datos, no en código</h2>
+    <div class="rule"></div>
+    <div class="body row" style="gap:24px;align-items:center">
+      <div><img src="img/bd_configuracion_dinamica.png" alt="Modelo relacional parcial de la configuración dinámica" style="height:462px;display:block;border:1.5px solid var(--line);border-radius:8px"></div>
+      <div class="col f1" style="gap:10px">
+        <div class="card" style="padding:8px 14px"><div class="mono g">modules</div><div class="sm">código, nombre y carpeta del módulo</div></div>
+        <div class="card" style="padding:8px 14px"><div class="mono g">submodules_modules</div><div class="sm">par de módulo y submódulo, con su carpeta</div></div>
+        <div class="card" style="padding:8px 14px"><div class="mono g">careers</div><div class="sm">carrera con su módulo propio</div></div>
+        <div class="card" style="padding:8px 14px"><div class="mono g">year_module</div><div class="sm">año académico del módulo</div></div>
+        <div class="card" style="padding:8px 14px"><div class="mono g">submodule_year_module</div><div class="sm">carpeta por año</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">El modelo completo se presenta en cinco vistas parciales, sección 3.2.7 de la tesis.</div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  const SECS={intro:'Introducción',obj:'Objetivos',met:'Metodología',oe1:'Objetivo 1',oe2:'Objetivo 2',oe3:'Objetivo 3',con:'Conclusiones'};
+  const ORDER=['intro','obj','met','oe1','oe2','oe3','con'];
+  const UTA='img/uta_logo.png', FISEI='img/logofisei.png';
+  const slides=[...document.querySelectorAll('.slide')];
+  const presenta=()=>document.body.classList.contains('present');
+  slides.forEach((s,i)=>{
+    const n=i+1;
+    if(s.classList.contains('std')){
+      s.insertAdjacentHTML('afterbegin',`<header class="hd"><img class="lu" src="${UTA}" alt=""><span>UNIVERSIDAD TÉCNICA DE AMBATO</span><img class="lf" src="${FISEI}" alt=""></header>`);
+      const sec=s.dataset.sec;
+      const prog= sec==='anx' ? '<span class="on">Material de apoyo</span>' : ORDER.map(k=>`<span class="${k===sec?'on':''}">${SECS[k]}</span>`).join('');
+      s.insertAdjacentHTML('beforeend',`<footer class="ft"><div class="prog">${prog}</div><div class="num">${n}</div></footer>`);
+    }
+  });
+  let cur=0;
+  function fit(){
+    document.documentElement.style.setProperty('--s',Math.min(innerWidth/1280,innerHeight/720));
+    document.documentElement.style.setProperty('--z',Math.min(1,(innerWidth-48)/1280));
+  }
+  // Clips: al presentar corre solo el de la diapositiva activa, desde el inicio.
+  function clips(){
+    if(!presenta()) return;
+    slides.forEach((s,k)=>s.querySelectorAll('video').forEach(v=>{
+      if(k===cur){try{v.currentTime=0}catch(err){} v.play().catch(()=>{})} else v.pause();
+    }));
+  }
+  function show(i){
+    cur=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===cur));
+    if(presenta()){try{history.replaceState(null,'','#'+(cur+1))}catch(err){}}
+    clips();
+  }
+  function present(on){
+    document.body.classList.toggle('present',on); show(cur);
+    if(!on){slides[cur].scrollIntoView({block:'center'}); visibles()}
+  }
+  // Fuera del modo presentación cada clip corre mientras está a la vista.
+  let io=null;
+  function visibles(){
+    if(!('IntersectionObserver' in window)) return;
+    if(!io){
+      io=new IntersectionObserver(es=>es.forEach(e=>{
+        if(presenta()) return;
+        if(e.isIntersecting) e.target.play().catch(()=>{}); else e.target.pause();
+      }),{threshold:.6});
+      document.querySelectorAll('.slide video').forEach(v=>io.observe(v));
+    }
+  }
+  // Ampliación: clic en una captura o en un clip; otro clic o cualquier tecla la cierra.
+  const zoom=document.getElementById('zoom');
+  function cerrarZoom(){zoom.classList.remove('on');zoom.innerHTML=''}
+  function abrirZoom(el){
+    const c=el.cloneNode(true); c.removeAttribute('style'); c.removeAttribute('class');
+    if(c.tagName==='VIDEO'){c.muted=true;c.loop=true;c.currentTime=el.currentTime||0;c.play().catch(()=>{})}
+    zoom.innerHTML=''; zoom.appendChild(c); zoom.classList.add('on');
+  }
+  zoom.addEventListener('click',e=>{e.stopPropagation();cerrarZoom()});
+  document.querySelectorAll('.shot img, .shot video, .hshot img').forEach(el=>{
+    el.style.cursor='zoom-in';
+    el.addEventListener('click',e=>{e.stopPropagation();abrirZoom(el)});
+    el.addEventListener('dblclick',e=>e.stopPropagation());
+  });
+  addEventListener('keydown',e=>{
+    if(zoom.classList.contains('on')){e.preventDefault();cerrarZoom();return}
+    const p=presenta();
+    if(e.key==='p'||e.key==='P'){present(!p);return}
+    if(!p) return;
+    if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();show(cur+1)}
+    else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(cur-1)}
+    else if(e.key==='Home') show(0);
+    else if(e.key==='End') show(slides.length-1);
+    else if(e.key==='Escape') present(false);
+  });
+  slides.forEach((s,k)=>{
+    s.addEventListener('dblclick',()=>{if(!presenta()){cur=k;present(true)}});
+    s.addEventListener('click',e=>{
+      if(!presenta()) return;
+      const r=s.getBoundingClientRect();
+      show(e.clientX < r.left + r.width*0.3 ? cur-1 : cur+1);
+    });
+  });
+  document.getElementById('btn-present').addEventListener('click',()=>present(true));
+  document.getElementById('btn-exit').addEventListener('click',e=>{e.stopPropagation();present(false)});
+  addEventListener('resize',fit); fit();
+  const h=parseInt(location.hash.slice(1),10); if(h>0) cur=h-1;
+  show(cur); visibles();
+})();
+</script>
+
+</body>
+</html>
